@@ -63,18 +63,18 @@ PR0M3N4DE 是独立开源项目，与勒·柯布西耶、Fondation Le Corbusier 
 | 能力 | 当前实现 | 仓库证据 |
 | --- | --- | --- |
 | 任务书规范化 | 宽松的人类任务书会转化为十三个显式标注的字段。`PROVIDED`、`UNKNOWN` 与 `MISSING` 保持区分；规范化器既不生成设计内容，也不生成新证据。 | [规范化任务书台账](skills/architectural-concept-design/references/normalized-brief-ledger.md) · [输入 Schema](skills/architectural-concept-design/references/normalized-brief-ledger.input.schema.json) · [规范化器](skills/architectural-concept-design/scripts/normalize_project_brief.py) |
-| 证据纪律 | 记录带有 `PROVIDED`、`VERIFIED`、`INFERRED`、`ASSUMED` 或 `PROPOSED` 标签。合同防止假设或推断被悄然表述为已验证事实。 | [核心规则](docs/standards/CORE.md) · [证据 Schema](skills/architectural-concept-design/references/evidence.schema.json) · [任务书／证据协议](skills/architectural-concept-design/references/brief-and-evidence.md) |
+| 证据纪律 | 记录带有 `PROVIDED`、`VERIFIED`、`INFERRED`、`ASSUMED` 或 `PROPOSED` 标签。合同防止假设或推断被悄然表述为已验证事实。 | [证据 Schema](skills/architectural-concept-design/references/evidence.schema.json) · [任务书／证据协议](skills/architectural-concept-design/references/brief-and-evidence.md) |
 | 场地、功能与流线推理 | 参考资料组织场地观察、功能、面积、邻接、分区、流线、网格／核心筒／高度假设与缺失信息。面积算术由确定性的本地脚本处理。 | [场地／语境](skills/architectural-concept-design/references/site-context-analysis.md) · [功能／面积／流线](skills/architectural-concept-design/references/program-area-and-circulation.md) · [面积表检查器](skills/architectural-concept-design/scripts/check_area_schedule.py) |
 | 实质不同的选项 | 输出合同记录假设、选项、标准、比较、依赖项与交付物。选项必须在空间操作上不同，而非仅仅风格不同。现有 `spatial_operation` 字段是选项描述，而不是通用演化历史引擎。 | [概念选项与决策](skills/architectural-concept-design/references/concept-options-and-decisions.md) · [比较／决策交接](skills/architectural-concept-design/references/option-comparison-decision-handoff.md) · [状态包 Schema](skills/architectural-concept-design/references/output.schema.json) |
 | 人类决策门与状态包 | 确定性装配器接收 Schema 有效的任务书与**已经由人撰写**的假设、选项和标准；它使状态包等待明确的人类决策。验证器追踪依赖项和过期的下游状态。 | [项目状态装配](skills/architectural-concept-design/references/project-state-assembly.md) · [装配器](skills/architectural-concept-design/scripts/assemble_project_state.py) · [状态验证器](skills/architectural-concept-design/scripts/validate_state.py) |
 | 仅状态的演示交接 | 当有效的真实项目状态具有一项明确的人类选择、且没有已审查的运行时候选集时，Skill 可以只用团队原创图示创建一份有边界的十页状态交接。它不渲染 PPTX，也不转移外部先例。 | [仅状态交接](skills/architectural-concept-design/references/state-only-presentation-handoff.md) · [构建器](skills/architectural-concept-design/scripts/build_state_only_presentation_handoff.py) |
 | 受控来源访问边界 | 本地注册表、请求计划检查、合成回放、运行时 dry-run 与明确门控的 canary 合同，约束精确来源、预算与遇拒即停行为。它们不是通用网页搜索或抓取设施。 | [来源注册表](skills/architectural-concept-design/references/source-access-registry.json) · [来源访问门](skills/architectural-concept-design/references/runtime-source-access-gate.md) · [受控计划](skills/architectural-concept-design/references/controlled-crawl-plan.md) |
-| 发布完整性 | 仓库包含确定性的 Skill 归档构建／验证／干净安装逻辑，以及独立的门：验证已提供的 PPTX 视觉 QA 证据，并在不覆盖受保护输入的前提下发布已验证候选稿。 | [发布安装](skills/architectural-concept-design/references/release-installation.md) · [发布打包器](skills/architectural-concept-design/scripts/release_skill_package.py) · [视觉 QA 标准](docs/standards/pptx-visual-qa-evidence.md) · [已验证发布标准](docs/standards/verified-pptx-release.md) |
-| 回归与治理检查 | Python 评测、Node 治理测试、严格 preflight、仓库检查及 GitHub Actions 均属于受跟踪的开发工作流。 | [测试与部署](docs/standards/testing-and-deployment.md) · [治理测试](tests/governance) · [Skill 评测](tests/skill/evaluations) |
+| 发布完整性 | 仓库包含确定性的 Skill 归档构建／验证／干净安装逻辑，以及独立的门：验证已提供的 PPTX 视觉 QA 证据，并在不覆盖受保护输入的前提下发布已验证候选稿。 | [发布安装](skills/architectural-concept-design/references/release-installation.md) · [发布打包器](skills/architectural-concept-design/scripts/release_skill_package.py) |
+| 回归与治理来源 | 源开发工作流使用 Python 评测、Node 治理测试、严格 preflight、仓库检查和 GitHub Actions。这些仅供开发的测试与治理源文件刻意未随本公开发行包提供。 | [公开发行清单](PUBLIC-DISTRIBUTION-MANIFEST.json) |
 
 ## 本地、可追溯的工作路径
 
-仓库包含用于测试这一链条的匿名合成 fixture；它们是结构示例，**不是**可以复用的建筑结论。真实项目从人类提供的材料开始，并保留其未知项。
+源开发工作流使用匿名合成 fixture 测试这一链条；它们是结构示例，**不是**可以复用的建筑结论，并且刻意未随本公开发行包提供。真实项目从人类提供的材料开始，并保留其未知项。
 
 ```text
 1. 规范化人类任务书。
@@ -100,11 +100,9 @@ uv run --project skills/architectural-concept-design --frozen --no-sync python \
   skills/architectural-concept-design/scripts/check_area_schedule.py \
   <area-schedule.json>
 
-uv run --project skills/architectural-concept-design --frozen --no-sync pytest \
-  tests/skill/evaluations
 ```
 
-仓库的合成示例位于 [`tests/skill/fixtures`](tests/skill/fixtures)。它们只展示验证与可追溯性；不是现实场地、规范依据、招采决策或施工包的模板。
+仅供开发的 fixture 与评测刻意未随本公开发行包提供；公开包保留的是上面展示的确定性本地操作。
 
 ## 建筑学的具体性
 
@@ -194,6 +192,10 @@ SketchUp / Rhino / CAD / BIM
 ## 项目地图
 
 ```text
+LICENSE                           # 本公开包的 Apache-2.0 文本
+NOTICE                            # 公开包 notices
+PUBLIC-DISTRIBUTION-MANIFEST.json # 确定性的公开导出记录
+
 skills/architectural-concept-design/
 ├── SKILL.md                 # 简洁的工作流与路由
 ├── references/              # 合同、Schema 与建筑指导
@@ -201,18 +203,13 @@ skills/architectural-concept-design/
 ├── assets/                  # 可打包的本地资产
 ├── pyproject.toml           # 锁定的 Python 运行时元数据（0.1.0）
 └── uv.lock                  # 锁定的运行时依赖
-
-tests/skill/                 # fixture、预期不变量、评测
-tests/governance/            # 仓库与政策检查
-docs/standards/              # 产品范围、发布、QA 与治理规则
-docs/adr/                    # 已接受与提议的架构决策
 ```
 
 简洁的操作入口是 [`skills/architectural-concept-design/SKILL.md`](skills/architectural-concept-design/SKILL.md)。详细规则应保留在链接的参考资料和脚本中，而非堆积在本 README 内。
 
 ## 开发与发布纪律
 
-在一项变更被视为完成前，仓库要求严格 preflight、仓库检查、治理测试、相关 Skill 评测、干净 diff，以及适用的审阅／发布证据。确切命令和发布边界记录在 [`docs/standards/testing-and-deployment.md`](docs/standards/testing-and-deployment.md) 与 [`skills/architectural-concept-design/references/release-installation.md`](skills/architectural-concept-design/references/release-installation.md) 中。
+在源开发变更被视为完成前，开发工作流要求严格 preflight、仓库检查、治理测试、相关 Skill 评测、干净 diff，以及适用的审阅／发布证据。仅供开发的治理文档与测试源文件刻意未随本公开发行包提供；保留的发布安装边界记录在 [`skills/architectural-concept-design/references/release-installation.md`](skills/architectural-concept-design/references/release-installation.md) 中。
 
 当前仓库包元数据版本为 `0.1.0`。归档创建、验证与干净安装均为确定性的本地操作；一个发布归档会记录其源提交、构建时间、清单与逐文件哈希。参见 [`release_skill_package.py`](skills/architectural-concept-design/scripts/release_skill_package.py)。
 
