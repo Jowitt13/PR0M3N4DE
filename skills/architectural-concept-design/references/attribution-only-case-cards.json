@@ -1,0 +1,204 @@
+{
+  "cards": [
+    {
+      "card_id": "CARD-001",
+      "building_name": "金贝尔美术馆",
+      "source_locator": "https://kimbellart.org/art-architecture/architecture/kahn-building",
+      "source_accessed_on": "2026-07-13",
+      "attribution_mode": "source_link_and_original_abstraction",
+      "content_origin": "human_original_abstraction",
+      "operation_summary": "以重复单元围合小庭院，让采光与停留在行进中交替出现。",
+      "building_tags": ["courtyard-void", "daylight", "repetitive-unit"]
+    },
+    {
+      "card_id": "CARD-002",
+      "building_name": "布里昂家族墓园",
+      "source_locator": "https://en.wikipedia.org/wiki/Brion_tomb",
+      "source_accessed_on": "2026-07-13",
+      "attribution_mode": "source_link_and_original_abstraction",
+      "content_origin": "human_original_abstraction",
+      "operation_summary": "以围合、浅水、桥与路径把纪念空间拆成连续的庭院段落。",
+      "building_tags": ["courtyard-void", "sequence", "threshold"]
+    },
+    {
+      "card_id": "CARD-003",
+      "building_name": "鹿特丹Kunsthal",
+      "source_locator": "https://www.oma.com/projects/kunsthal",
+      "source_accessed_on": "2026-07-13",
+      "attribution_mode": "source_link_and_original_abstraction",
+      "content_origin": "human_original_abstraction",
+      "operation_summary": "让连续坡道将入口、公园、室内活动和屋面串成一条公共路径。",
+      "building_tags": ["interior-street-sequence", "ramp", "public-route"]
+    },
+    {
+      "card_id": "CARD-004",
+      "building_name": "代官山集合住宅（Hillside Terrace）",
+      "source_locator": "https://udcsa.gsd.harvard.edu/projects/14",
+      "source_accessed_on": "2026-07-13",
+      "attribution_mode": "source_link_and_original_abstraction",
+      "content_origin": "human_original_abstraction",
+      "operation_summary": "以沿街递进的体量与步行路径，让建筑群延续城市街道。",
+      "building_tags": ["interior-street-sequence", "incremental", "urban-edge"]
+    },
+    {
+      "card_id": "CARD-005",
+      "building_name": "萨尔克生物研究所",
+      "source_locator": "https://www.salk.edu/about/visit/architecture/",
+      "source_accessed_on": "2026-07-13",
+      "attribution_mode": "source_link_and_original_abstraction",
+      "content_origin": "human_original_abstraction",
+      "operation_summary": "以成对翼楼围绕开敞轴线布置，并用连廊组织工作单元。",
+      "building_tags": ["cluster-corridor", "courtyard", "axis"]
+    },
+    {
+      "card_id": "CARD-006",
+      "building_name": "珊纳特赛罗市政厅",
+      "source_locator": "https://www.alvaraalto.fi/en/architecture/saynatsalo-town-hall/",
+      "source_accessed_on": "2026-07-13",
+      "attribution_mode": "source_link_and_original_abstraction",
+      "content_origin": "human_original_abstraction",
+      "operation_summary": "以抬高庭院作为共同核心，让不同高度的体量沿边围合并由走廊衔接。",
+      "building_tags": ["cluster-corridor", "raised-court", "threshold"]
+    },
+    {
+      "card_id": "CARD-007",
+      "building_name": "巴塞罗那德国馆",
+      "source_locator": "https://miesbcn.com/the-pavilion/",
+      "source_accessed_on": "2026-07-13",
+      "attribution_mode": "source_link_and_original_abstraction",
+      "content_origin": "human_original_abstraction",
+      "operation_summary": "用错位且不闭合的自由墙片，给边界以方向提示而非封闭。",
+      "building_tags": ["boundary-setback", "free-wall", "threshold"]
+    },
+    {
+      "card_id": "CARD-008",
+      "building_name": "福特基金会大楼",
+      "source_locator": "https://www.fordfoundation.org/about/the-ford-foundation-center-for-social-justice/our-buildings-history/",
+      "source_accessed_on": "2026-07-13",
+      "attribution_mode": "source_link_and_original_abstraction",
+      "content_origin": "human_original_abstraction",
+      "operation_summary": "以高挑内庭把公共室内空间从街边后退，并将绿化纳入日常视线。",
+      "building_tags": ["boundary-setback", "interior-garden", "public-realm"]
+    },
+    {
+      "card_id": "CARD-009",
+      "building_name": "直岛当代美术馆（Benesse House Museum）",
+      "source_locator": "https://benesse-artsite.jp/en/art/benessehouse-museum.html",
+      "source_accessed_on": "2026-07-13",
+      "attribution_mode": "source_link_and_original_abstraction",
+      "content_origin": "human_original_abstraction",
+      "operation_summary": "让主体嵌入坡地，并以采光庭院维持地下空间与自然光的联系。",
+      "building_tags": ["boundary-setback", "terrain", "light-court"]
+    },
+    {
+      "card_id": "CARD-010",
+      "building_name": "菲利普斯埃克塞特图书馆",
+      "source_locator": "https://www.exeter.edu/about/library",
+      "source_accessed_on": "2026-07-13",
+      "attribution_mode": "source_link_and_original_abstraction",
+      "content_origin": "human_original_abstraction",
+      "operation_summary": "以方形中庭作为核心，让环形阅览与上部采光共同组织垂直空间。",
+      "building_tags": ["vertical-atrium", "ring", "top-light"]
+    },
+    {
+      "card_id": "CARD-011",
+      "building_name": "仙台媒体中心",
+      "source_locator": "https://www.smt.jp/en/",
+      "source_accessed_on": "2026-07-13",
+      "attribution_mode": "source_link_and_original_abstraction",
+      "content_origin": "human_original_abstraction",
+      "operation_summary": "以贯穿多层的管状构件组织结构、采光与服务，使平面保持可变。",
+      "building_tags": ["vertical-atrium", "vertical-system", "flexible-floor"]
+    },
+    {
+      "card_id": "CARD-012",
+      "building_name": "瓦尔斯温泉浴场",
+      "source_locator": "https://www.therme-vals.ch/en/",
+      "source_accessed_on": "2026-07-13",
+      "attribution_mode": "source_link_and_original_abstraction",
+      "content_origin": "human_original_abstraction",
+      "operation_summary": "以屋顶光缝将自然光引入厚重空间，形成明暗节奏。",
+      "building_tags": ["daylight-organization", "roof-slit", "atmosphere"]
+    },
+    {
+      "card_id": "CARD-013",
+      "building_name": "金泽21世纪美术馆",
+      "source_locator": "https://www.kanazawa21.jp/en/",
+      "source_accessed_on": "2026-07-13",
+      "attribution_mode": "source_link_and_original_abstraction",
+      "content_origin": "human_original_abstraction",
+      "operation_summary": "以多个天井把均质平面分成可独立抵达、又彼此连通的光环境。",
+      "building_tags": ["daylight-organization", "light-court", "distributed-entry"]
+    },
+    {
+      "card_id": "CARD-014",
+      "building_name": "布雷根茨美术馆",
+      "source_locator": "https://www.kunsthaus-bregenz.at/",
+      "source_accessed_on": "2026-07-13",
+      "attribution_mode": "source_link_and_original_abstraction",
+      "content_origin": "human_original_abstraction",
+      "operation_summary": "以半透明外壳和漫射顶光，让展厅获得均质光线。",
+      "building_tags": ["daylight-organization", "diffuse-light", "envelope"]
+    },
+    {
+      "card_id": "CARD-015",
+      "building_name": "甘多小学",
+      "source_locator": "https://www.kerearchitecture.com/work/building/gando-primary-school-3",
+      "source_accessed_on": "2026-07-13",
+      "attribution_mode": "source_link_and_original_abstraction",
+      "content_origin": "human_original_abstraction",
+      "operation_summary": "以厚重围护承载安静单元，在其上方设置通风的活动遮蔽层。",
+      "building_tags": ["active-quiet-zoning", "passive-ventilation", "section"]
+    },
+    {
+      "card_id": "CARD-016",
+      "building_name": "劳力士学习中心",
+      "source_locator": "https://www.epfl.ch/campus/architecture/",
+      "source_accessed_on": "2026-07-13",
+      "attribution_mode": "source_link_and_original_abstraction",
+      "content_origin": "human_original_abstraction",
+      "operation_summary": "以连续起伏地面划分安静学习、活动与通行，而不依赖固定隔墙。",
+      "building_tags": ["active-quiet-zoning", "continuous-floor", "gradient"]
+    },
+    {
+      "card_id": "CARD-017",
+      "building_name": "蓬皮杜艺术中心",
+      "source_locator": "https://www.centrepompidou.fr/en/",
+      "source_accessed_on": "2026-07-13",
+      "attribution_mode": "source_link_and_original_abstraction",
+      "content_origin": "human_original_abstraction",
+      "operation_summary": "将服务系统外置，把内部平面留给可变活动，并使公共上行路径可见。",
+      "building_tags": ["public-service-circulation", "external-service", "public-route"]
+    },
+    {
+      "card_id": "CARD-018",
+      "building_name": "波尔图建筑学院",
+      "source_locator": "https://sigarra.up.pt/faup/en/",
+      "source_accessed_on": "2026-07-13",
+      "attribution_mode": "source_link_and_original_abstraction",
+      "content_origin": "human_original_abstraction",
+      "operation_summary": "顺应地形布置公共步行路线，并将后勤服务移入较低层。",
+      "building_tags": ["public-service-circulation", "topography", "service-separation"]
+    },
+    {
+      "card_id": "CARD-019",
+      "building_name": "宁波博物馆",
+      "source_locator": "https://www.nbmuseum.cn/",
+      "source_accessed_on": "2026-07-13",
+      "attribution_mode": "source_link_and_original_abstraction",
+      "content_origin": "human_original_abstraction",
+      "operation_summary": "以分裂体量之间的缝隙形成室内街巷，再以连桥把路径接续。",
+      "building_tags": ["public-service-circulation", "internal-street", "bridge"]
+    },
+    {
+      "card_id": "CARD-020",
+      "building_name": "萨伏伊别墅",
+      "source_locator": "https://www.villa-savoye.fr/",
+      "source_accessed_on": "2026-07-13",
+      "attribution_mode": "source_link_and_original_abstraction",
+      "content_origin": "human_original_abstraction",
+      "operation_summary": "把车行与服务放在下层，让坡道把步行体验连续带入上层公共空间。",
+      "building_tags": ["public-service-circulation", "ramp", "promenade"]
+    }
+  ]
+}

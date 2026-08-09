@@ -1,0 +1,195 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://architecture-pre-design-skills.local/schemas/runtime-candidate-handoff/1.0.0",
+  "title": "Runtime Candidate Handoff Draft Set",
+  "description": "An offline, deterministic conversion of already-authorized controlled live-canary observations into exactly six unselected, auditable runtime candidate drafts. This artifact never performs discovery, network access, or human selection. It is not a CARD-xxx corpus card, not an ADR-0001 SRC-xxx or E-xxx object, not a source-permission or VERIFIED claim, and not a media or presentation artifact.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract_version",
+    "handoff_id",
+    "registry_version",
+    "no_fabrication",
+    "candidate_drafts",
+    "selection"
+  ],
+  "properties": {
+    "contract_version": {"const": "1.0.0"},
+    "handoff_id": {
+      "type": "string",
+      "pattern": "^RCH-[0-9]{3,}$",
+      "description": "Stable identifier for this finite, offline candidate-handoff run."
+    },
+    "registry_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+      "description": "Exact source-access registry version used to resolve every draft source."
+    },
+    "no_fabrication": {
+      "const": true,
+      "description": "Every field is copied verbatim from the explicit local input or resolved authoritatively from the fixed registry. Nothing is inferred, padded, or completed."
+    },
+    "candidate_drafts": {
+      "type": "array",
+      "minItems": 6,
+      "maxItems": 6,
+      "items": {"$ref": "#/$defs/CandidateDraft"},
+      "description": "Exactly six unselected candidate drafts, one per authorized source observation."
+    },
+    "selection": {"$ref": "#/$defs/AwaitingSelection"}
+  },
+  "$defs": {
+    "HandoffInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contract_version", "handoff_id", "source_observations"],
+      "properties": {
+        "contract_version": {"const": "1.0.0"},
+        "handoff_id": {"type": "string", "pattern": "^RCH-[0-9]{3,}$"},
+        "source_observations": {
+          "type": "array",
+          "minItems": 6,
+          "maxItems": 6,
+          "items": {"$ref": "#/$defs/SourceObservation"}
+        }
+      }
+    },
+    "SourceObservation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_locator",
+        "accessed_at",
+        "audit_status",
+        "source_text_trust",
+        "instruction_handling",
+        "short_text"
+      ],
+      "properties": {
+        "source_locator": {"type": "string", "format": "uri", "minLength": 1, "maxLength": 600},
+        "accessed_at": {"type": "string", "format": "date-time"},
+        "audit_status": {"const": "live_canary_unverified"},
+        "source_text_trust": {"const": "untrusted_page_content"},
+        "instruction_handling": {"const": "data_only_ignore_instructions"},
+        "short_text": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["project_title"],
+          "properties": {
+            "project_title": {"type": "string", "minLength": 1, "maxLength": 280},
+            "short_project_description": {"type": "string", "minLength": 1, "maxLength": 280}
+          },
+          "description": "Only the two user-authorized fields may appear. A third field is a schema failure, never a silent drop."
+        }
+      }
+    },
+    "CandidateDraft": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "candidate_status",
+        "source_registry_version",
+        "source",
+        "observed_short_text",
+        "evidence_registration_status"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^RC-[0-9]{3,}$",
+          "description": "Runtime candidate ID. CARD-xxx is reserved for the built-in corpus."
+        },
+        "candidate_status": {"const": "UNSELECTED_RUNTIME_CANDIDATE"},
+        "source_registry_version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+        "source": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "domain",
+            "access_method",
+            "source_capture_scope",
+            "canonical_locator",
+            "accessed_at",
+            "request_gate_decision",
+            "gate_receipt"
+          ],
+          "properties": {
+            "domain": {"type": "string", "minLength": 1},
+            "access_method": {"type": "string", "minLength": 1},
+            "source_capture_scope": {"const": "manual_title_and_locator_only"},
+            "canonical_locator": {"type": "string", "format": "uri", "minLength": 1, "maxLength": 600},
+            "accessed_at": {"type": "string", "format": "date-time"},
+            "request_gate_decision": {"const": "MANUAL_ONLY"},
+            "gate_receipt": {
+              "const": null,
+              "description": "A rendered controlled-canary short-text capture is not an automated API gate result and must never claim a gate receipt."
+            }
+          }
+        },
+        "observed_short_text": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "source_text_trust",
+            "instruction_handling",
+            "audit_status",
+            "project_title",
+            "short_project_description"
+          ],
+          "properties": {
+            "source_text_trust": {"const": "untrusted_page_content"},
+            "instruction_handling": {"const": "data_only_ignore_instructions"},
+            "audit_status": {"const": "live_canary_unverified"},
+            "project_title": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["observed", "text"],
+              "properties": {
+                "observed": {"const": true},
+                "text": {"type": "string", "minLength": 1, "maxLength": 280}
+              }
+            },
+            "short_project_description": {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["observed", "text"],
+                  "properties": {
+                    "observed": {"const": true},
+                    "text": {"type": "string", "minLength": 1, "maxLength": 280}
+                  }
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["observed"],
+                  "properties": {
+                    "observed": {"const": false}
+                  },
+                  "description": "Explicit not-observed state. A source that returned only a title keeps a false observed flag and carries no fabricated text."
+                }
+              ]
+            }
+          }
+        },
+        "evidence_registration_status": {
+          "const": "unregistered_until_human_selected",
+          "description": "SRC-xxx and E-xxx registration happens only after separate explicit human selection and actual use."
+        }
+      }
+    },
+    "AwaitingSelection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["state"],
+      "properties": {
+        "state": {
+          "const": "AWAITING_HUMAN_SELECTION",
+          "description": "The handoff never selects, ranks, or recommends. Selection is a separate, later, human-only step."
+        }
+      }
+    }
+  }
+}

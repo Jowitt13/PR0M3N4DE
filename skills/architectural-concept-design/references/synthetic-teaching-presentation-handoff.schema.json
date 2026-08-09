@@ -1,0 +1,214 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://architecture-pre-design-skills.local/schemas/synthetic-teaching-presentation-handoff/1.0.0",
+  "title": "Synthetic Teaching Presentation Handoff",
+  "description": "A local teaching-only handoff. It is incompatible with the real-project presentation handoff and may not carry precedent, source, evidence, media, URL, or verification data.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract_version",
+    "mode",
+    "handoff_id",
+    "project_id",
+    "project_display_name",
+    "state_package",
+    "human_design_decision",
+    "teaching_labels",
+    "not_real_project_validation",
+    "human_authorized_assumptions",
+    "program_space_ids",
+    "teaching_content",
+    "deck_framework",
+    "local_assets",
+    "rendering_boundary"
+  ],
+  "properties": {
+    "contract_version": {"const": "1.0.0"},
+    "mode": {"const": "SYNTHETIC_NO_PRECEDENT_DEMO"},
+    "handoff_id": {"type": "string", "pattern": "^STH-[0-9]{3,}$"},
+    "project_id": {"type": "string", "pattern": "^P-[A-Za-z0-9][A-Za-z0-9-]*$"},
+    "project_display_name": {"type": "string", "minLength": 1},
+    "state_package": {"$ref": "#/$defs/StatePackageReference"},
+    "human_design_decision": {"$ref": "#/$defs/HumanDecision"},
+    "teaching_labels": {"$ref": "#/$defs/TeachingLabels"},
+    "not_real_project_validation": {"const": true},
+    "human_authorized_assumptions": {"$ref": "#/$defs/HumanAuthorizedAssumptions"},
+    "program_space_ids": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string", "pattern": "^S-[0-9]{3,}$"}
+    },
+    "teaching_content": {"$ref": "#/$defs/TeachingContent"},
+    "deck_framework": {"$ref": "#/$defs/DeckFramework"},
+    "local_assets": {
+      "type": "array",
+      "maxItems": 0
+    },
+    "rendering_boundary": {"$ref": "#/$defs/RenderingBoundary"}
+  },
+  "$defs": {
+    "Sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "StatePackageReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["input_hash", "output_hash", "validated_at"],
+      "properties": {
+        "input_hash": {"$ref": "#/$defs/Sha256"},
+        "output_hash": {"$ref": "#/$defs/Sha256"},
+        "validated_at": {"type": "string", "format": "date-time"}
+      }
+    },
+    "HumanDecision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["decision_id", "decision_type", "chosen_option_id", "decided_by", "recorded_in_validated_state"],
+      "properties": {
+        "decision_id": {"type": "string", "pattern": "^D-[0-9]{3,}$"},
+        "decision_type": {"const": "select"},
+        "chosen_option_id": {"type": "string", "pattern": "^O-[0-9]{3,}$"},
+        "decided_by": {"type": "string", "minLength": 1},
+        "recorded_in_validated_state": {"const": true}
+      }
+    },
+    "TeachingLabel": {
+      "type": "string",
+      "enum": [
+        "HUMAN_AUTHORIZED_ASSUMPTION",
+        "DEMO_ONLY",
+        "NOT_A_REAL_SITE_OR_BUILDABILITY_CONCLUSION"
+      ]
+    },
+    "TeachingLabels": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/TeachingLabel"}
+    },
+    "UnresolvedInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["field", "status"],
+      "properties": {
+        "field": {"type": "string", "enum": ["budget_range", "target_opening_date", "known_regulations_or_assumptions"]},
+        "status": {"const": "UNKNOWN"}
+      }
+    },
+    "HumanAuthorizedAssumptions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["classification", "unresolved_inputs"],
+      "properties": {
+        "classification": {"$ref": "#/$defs/TeachingLabels"},
+        "unresolved_inputs": {
+          "type": "array",
+          "minItems": 0,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/UnresolvedInput"}
+        }
+      }
+    },
+    "TeachingProgramSpace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "area_m2"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^S-[0-9]{3,}$"},
+        "name": {"type": "string", "minLength": 1},
+        "area_m2": {"type": "number", "exclusiveMinimum": 0}
+      }
+    },
+    "TeachingOption": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "spatial_operation"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^O-[0-9]{3,}$"},
+        "name": {"type": "string", "minLength": 1},
+        "spatial_operation": {"type": "string", "minLength": 1}
+      }
+    },
+    "TeachingHypothesis": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "description"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^H-[0-9]{3,}$"},
+        "description": {"type": "string", "minLength": 1}
+      }
+    },
+    "TeachingContent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["program_spaces", "concept_options", "selected_option", "hypotheses"],
+      "properties": {
+        "program_spaces": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/TeachingProgramSpace"}
+        },
+        "concept_options": {
+          "type": "array",
+          "minItems": 2,
+          "items": {"$ref": "#/$defs/TeachingOption"}
+        },
+        "selected_option": {"$ref": "#/$defs/TeachingOption"},
+        "hypotheses": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/$defs/TeachingHypothesis"}
+        }
+      }
+    },
+    "DeckPage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["page_id", "title", "purpose", "required_state_ids", "visible_teaching_notice", "visual_strategy", "speaker_note"],
+      "properties": {
+        "page_id": {"type": "string", "pattern": "^STP-[0-9]{2}$"},
+        "title": {"type": "string", "minLength": 1},
+        "purpose": {"type": "string", "minLength": 1},
+        "required_state_ids": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"type": "string", "pattern": "^(?:C|S|R|H|O|K|D)-[0-9]{3,}$"}
+        },
+        "visible_teaching_notice": {"const": "TEACHING DEMO — NOT A REAL PROJECT VALIDATION"},
+        "visual_strategy": {"const": "team_original_vector_diagram_only"},
+        "speaker_note": {"type": "string", "minLength": 1}
+      }
+    },
+    "DeckFramework": {
+      "type": "array",
+      "minItems": 8,
+      "maxItems": 8,
+      "prefixItems": [
+        {"allOf": [{"$ref": "#/$defs/DeckPage"}, {"properties": {"page_id": {"const": "STP-01"}}}]},
+        {"allOf": [{"$ref": "#/$defs/DeckPage"}, {"properties": {"page_id": {"const": "STP-02"}}}]},
+        {"allOf": [{"$ref": "#/$defs/DeckPage"}, {"properties": {"page_id": {"const": "STP-03"}}}]},
+        {"allOf": [{"$ref": "#/$defs/DeckPage"}, {"properties": {"page_id": {"const": "STP-04"}}}]},
+        {"allOf": [{"$ref": "#/$defs/DeckPage"}, {"properties": {"page_id": {"const": "STP-05"}}}]},
+        {"allOf": [{"$ref": "#/$defs/DeckPage"}, {"properties": {"page_id": {"const": "STP-06"}}}]},
+        {"allOf": [{"$ref": "#/$defs/DeckPage"}, {"properties": {"page_id": {"const": "STP-07"}}}]},
+        {"allOf": [{"$ref": "#/$defs/DeckPage"}, {"properties": {"page_id": {"const": "STP-08"}}}]}
+      ],
+      "items": false
+    },
+    "RenderingBoundary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["renderer_name", "network_accessed", "third_party_media_packaged", "external_urls_permitted", "source_or_evidence_transferred", "rendering_authority"],
+      "properties": {
+        "renderer_name": {"const": "ppt-master"},
+        "network_accessed": {"const": false},
+        "third_party_media_packaged": {"const": false},
+        "external_urls_permitted": {"const": false},
+        "source_or_evidence_transferred": {"const": false},
+        "rendering_authority": {"const": "validated_synthetic_handoff_and_team_original_vector_diagrams_only"}
+      }
+    }
+  }
+}

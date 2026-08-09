@@ -1,0 +1,166 @@
+{
+  "format": "adr-0004-case-research-supplements/v1",
+  "card_source": "attribution-only-case-cards.json",
+  "supplements": [
+    {
+      "card_id": "CARD-001",
+      "reviewed_source_locator": "https://kimbellart.org/art-architecture/architecture/kahn-building",
+      "reviewed_source_accessed_on": "2026-07-15",
+      "fact_note": "Kimbell's architecture page describes cycloid vault skylights, suspended reflectors, and three interior courtyards. The existing courtyard-and-light operation remains a reasonable team abstraction.",
+      "review_status": "agent_checked_needs_human_confirmation",
+      "proposed_operation_summary": null
+    },
+    {
+      "card_id": "CARD-002",
+      "reviewed_source_locator": "https://en.wikipedia.org/wiki/Brion_tomb",
+      "reviewed_source_accessed_on": "2026-07-15",
+      "fact_note": "The reviewed secondary page describes an L-shaped concrete memorial with gardens, water features, a sloped enclosure, chapel, and distinct burial elements. It does not independently substantiate every bridge detail in the current abstraction.",
+      "review_status": "agent_checked_needs_human_confirmation",
+      "proposed_operation_summary": "以围合、庭园与水景把纪念空间组织为连续段落，让空腔承担停留与过渡。"
+    },
+    {
+      "card_id": "CARD-003",
+      "reviewed_source_locator": "https://www.oma.com/projects/kunsthal",
+      "reviewed_source_accessed_on": "2026-07-15",
+      "fact_note": "OMA describes sloping floor planes and tightly organized ramps connecting three large halls and two galleries. The current continuous-public-route abstraction is aligned with the reviewed project page.",
+      "review_status": "agent_checked_needs_human_confirmation",
+      "proposed_operation_summary": null
+    },
+    {
+      "card_id": "CARD-004",
+      "reviewed_source_locator": "https://www.maki-and-associates.co.jp/projects/HST?lang=en",
+      "reviewed_source_accessed_on": "2026-07-15",
+      "fact_note": "Maki and Associates attributes Hillside Terrace's long-lived cultural presence to spatial and architectural means together with active public programming. The current gradual urban-sequence abstraction is retained as a team interpretation.",
+      "review_status": "agent_checked_needs_human_confirmation",
+      "proposed_operation_summary": null
+    },
+    {
+      "card_id": "CARD-005",
+      "reviewed_source_locator": "https://www.salk.edu/about/about-salk-architecture/",
+      "reviewed_source_accessed_on": "2026-07-15",
+      "fact_note": "Salk's architecture material identifies study towers at the courtyard and daylight-filled laboratories. The paired-wing and connecting-workspace abstraction remains a team-authored synthesis pending human confirmation.",
+      "review_status": "agent_checked_needs_human_confirmation",
+      "proposed_operation_summary": null
+    },
+    {
+      "card_id": "CARD-006",
+      "reviewed_source_locator": "https://www.alvaraalto.fi/en/architecture/saynatsalo-town-hall/",
+      "reviewed_source_accessed_on": "2026-07-15",
+      "fact_note": "The Aalto Foundation describes public rooms reached by a granite stair to an inner courtyard, with a tower-like council chamber and a corridor around the court. The raised-court and linked-volume abstraction is supported.",
+      "review_status": "agent_checked_needs_human_confirmation",
+      "proposed_operation_summary": null
+    },
+    {
+      "card_id": "CARD-007",
+      "reviewed_source_locator": "https://miesbcn.com/the-pavilion/",
+      "reviewed_source_accessed_on": "2026-07-15",
+      "fact_note": "The foundation page identifies the pavilion's glass, steel, stone, water, and reconstruction history, but the accessed text does not describe the current free-wall operation in detail. Keep the card unchanged until a curator confirms it against a more specific source.",
+      "review_status": "agent_checked_needs_human_confirmation",
+      "proposed_operation_summary": null
+    },
+    {
+      "card_id": "CARD-008",
+      "reviewed_source_locator": "https://www.fordfoundation.org/about/the-ford-foundation-center-for-social-justice/our-buildings-history/",
+      "reviewed_source_accessed_on": "2026-07-15",
+      "fact_note": "Ford Foundation identifies a transparent block-wide building and a twelve-story enclosed atrium garden that is open to the public during visiting hours. The interior-garden setback abstraction is supported.",
+      "review_status": "agent_checked_needs_human_confirmation",
+      "proposed_operation_summary": null
+    },
+    {
+      "card_id": "CARD-009",
+      "reviewed_source_locator": "https://benesse-artsite.jp/en/art/benessehouse-museum.html",
+      "reviewed_source_accessed_on": "2026-07-15",
+      "fact_note": "Benesse identifies a museum-hotel on high ground overlooking the Seto Inland Sea, with large apertures opening its interior to the surroundings. The accessed page does not establish the existing light-court wording.",
+      "review_status": "agent_checked_needs_human_confirmation",
+      "proposed_operation_summary": "以面海高地与大开口让室内、自然光和周边景观持续关联。"
+    },
+    {
+      "card_id": "CARD-010",
+      "reviewed_source_locator": "https://exeter.edu/about/our-campus/facilities/class-of-1945-library/",
+      "reviewed_source_accessed_on": "2026-07-15",
+      "fact_note": "Exeter describes Kahn's library as a campus intellectual center, while its architectural account identifies the central hall, large circular openings, book stacks, and atrium light. The central-void reading is retained.",
+      "review_status": "agent_checked_needs_human_confirmation",
+      "proposed_operation_summary": null
+    },
+    {
+      "card_id": "CARD-011",
+      "reviewed_source_locator": "https://www.moma.org/collection/works/1034",
+      "reviewed_source_accessed_on": "2026-07-15",
+      "fact_note": "MoMA characterizes Sendai Mediatheque through structural tubes, floor plates, and skin. The card's transferable reading of tubes joining structure, light, and services remains a team-authored interpretation.",
+      "review_status": "agent_checked_needs_human_confirmation",
+      "proposed_operation_summary": null
+    },
+    {
+      "card_id": "CARD-012",
+      "reviewed_source_locator": "https://www.therme-vals.ch/en/",
+      "reviewed_source_accessed_on": "2026-07-15",
+      "fact_note": "The selected thermal-bath page was manually accessed, but its accessible text did not expose enough architectural detail to check the roof-slit operation. No static-card change is proposed without a more specific reviewed source.",
+      "review_status": "agent_checked_needs_human_confirmation",
+      "proposed_operation_summary": null
+    },
+    {
+      "card_id": "CARD-013",
+      "reviewed_source_locator": "https://www.kanazawa21.jp/en/",
+      "reviewed_source_accessed_on": "2026-07-15",
+      "fact_note": "The museum site identifies a dedicated architecture section and SANAA-designed public spaces, but the accessed index does not state the full courtyard arrangement. Retain the existing team abstraction pending curator confirmation.",
+      "review_status": "agent_checked_needs_human_confirmation",
+      "proposed_operation_summary": null
+    },
+    {
+      "card_id": "CARD-014",
+      "reviewed_source_locator": "https://www.kunsthaus-bregenz.at/en/architecture",
+      "reviewed_source_accessed_on": "2026-07-15",
+      "fact_note": "Kunsthaus Bregenz describes etched-glass facade panels that filter changing daylight into the levels and an independent double casing around concrete structure. The diffuse-light envelope abstraction is supported.",
+      "review_status": "agent_checked_needs_human_confirmation",
+      "proposed_operation_summary": null
+    },
+    {
+      "card_id": "CARD-015",
+      "reviewed_source_locator": "https://www.kerearchitecture.com/work/building/gando-primary-school-3",
+      "reviewed_source_accessed_on": "2026-07-15",
+      "fact_note": "Kere Architecture directly links the school to poor lighting and ventilation, thermal clay-cement walls, and a roof pulled away from the learning space for ventilation. The section-based environmental operation is supported.",
+      "review_status": "agent_checked_needs_human_confirmation",
+      "proposed_operation_summary": null
+    },
+    {
+      "card_id": "CARD-016",
+      "reviewed_source_locator": "https://www.epfl.ch/campus/visitors/buildings/rolex-learning-center/building/",
+      "reviewed_source_accessed_on": "2026-07-15",
+      "fact_note": "EPFL describes one uninterrupted space with gentle slopes and terraces around internal patios. The current continuous-floor and gradient abstraction is supported without treating it as a verified runtime claim.",
+      "review_status": "agent_checked_needs_human_confirmation",
+      "proposed_operation_summary": null
+    },
+    {
+      "card_id": "CARD-017",
+      "reviewed_source_locator": "https://www.centrepompidou.fr/fr/le-centre-pompidou-se-metamorphose/une-architecture-iconique",
+      "reviewed_source_accessed_on": "2026-07-15",
+      "fact_note": "Centre Pompidou identifies the Piano-Rogers building through a glass-and-metal structure and colored exterior arteries, while its educational material treats the external escalator as a public route. The public-service circulation abstraction is supported.",
+      "review_status": "agent_checked_needs_human_confirmation",
+      "proposed_operation_summary": null
+    },
+    {
+      "card_id": "CARD-018",
+      "reviewed_source_locator": "https://sigarra.up.pt/faup/en/",
+      "reviewed_source_accessed_on": "2026-07-15",
+      "fact_note": "The selected university source was manually accessed, but its accessible text did not provide enough project-specific spatial evidence for the current topography-and-service separation summary. No static-card change is proposed.",
+      "review_status": "agent_checked_needs_human_confirmation",
+      "proposed_operation_summary": null
+    },
+    {
+      "card_id": "CARD-019",
+      "reviewed_source_locator": "https://www.amarch.cn/?page_id=12196",
+      "reviewed_source_accessed_on": "2026-07-15",
+      "fact_note": "Amateur Architecture Studio identifies a rectangular base, fractured tilting upper volumes, a mountain-like reading, and reused brick and tile construction. The accessed source does not establish every bridge and internal-street detail in the current wording.",
+      "review_status": "agent_checked_needs_human_confirmation",
+      "proposed_operation_summary": "以裂开、倾斜的体量与再生材料把博物馆组织为可穿行的山体意象。"
+    },
+    {
+      "card_id": "CARD-020",
+      "reviewed_source_locator": "https://www.villa-savoye.fr/",
+      "reviewed_source_accessed_on": "2026-07-15",
+      "fact_note": "The national-monuments page presents Villa Savoye as a modernist manifesto and links its architectural-promenade guide. The current ramp-led sequence remains a team-authored reading pending human confirmation of detailed service-flow claims.",
+      "review_status": "agent_checked_needs_human_confirmation",
+      "proposed_operation_summary": null
+    }
+  ]
+}

@@ -1,0 +1,447 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://architecture-pre-design-skills.local/schemas/normalized-brief-human-assembly-handoff/1.0.0",
+  "title": "Human-Mediated Project State Assembly Handoff",
+  "description": "The deterministic, local-only handoff between the ARCH-079 normalized brief ledger and the ARCH-078 project-state assembly. It re-validates the ledger contract, propagates every PROVIDED / UNKNOWN / MISSING status unchanged, binds to the ledger SHA-256 and input hash, lists explicit human authoring todos for every UNKNOWN and MISSING field, and names the chapters a human must author before any assembly. It is not a state package and never a direct assemble_project_state input: injecting sources, evidence, constraints, relations, program spaces, hypotheses, options, criteria, dependencies, or deliverables content fails this schema.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "handoff_kind",
+    "authoring_state",
+    "not_direct_assembly_input",
+    "ledger_binding",
+    "fields",
+    "status_summary",
+    "human_authoring_todos",
+    "human_authored_chapters",
+    "not_generated"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "handoff_kind": {
+      "const": "HUMAN_MEDIATED_PROJECT_STATE_ASSEMBLY_HANDOFF"
+    },
+    "authoring_state": {
+      "const": "AWAITING_HUMAN_AUTHORING",
+      "description": "The handoff is waiting for a human to author the listed chapters; no agent may fill them."
+    },
+    "not_direct_assembly_input": {
+      "const": true,
+      "description": "This document must never be passed as assemble_project_state input or assembly draft."
+    },
+    "ledger_binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ledger_schema_version",
+        "ledger_kind",
+        "input_hash",
+        "ledger_sha256"
+      ],
+      "properties": {
+        "ledger_schema_version": {
+          "const": "1.0.0"
+        },
+        "ledger_kind": {
+          "const": "normalized_brief_ledger"
+        },
+        "input_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "description": "The ledger's own input hash, re-verified by the builder against the canonical raw input."
+        },
+        "ledger_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "description": "SHA-256 of the canonical serialization of the accepted ledger document."
+        }
+      }
+    },
+    "fields": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "project_name",
+        "project_location",
+        "site_boundary_or_redline",
+        "north_orientation",
+        "road_edges_and_access",
+        "building_type",
+        "target_area_or_scale",
+        "users",
+        "required_spaces",
+        "budget_range",
+        "target_opening_date",
+        "design_goals",
+        "known_regulations_or_assumptions"
+      ],
+      "properties": {
+        "project_name": {
+          "$ref": "#/$defs/textFieldEntry"
+        },
+        "project_location": {
+          "$ref": "#/$defs/textFieldEntry"
+        },
+        "site_boundary_or_redline": {
+          "$ref": "#/$defs/textFieldEntry"
+        },
+        "north_orientation": {
+          "$ref": "#/$defs/textFieldEntry"
+        },
+        "road_edges_and_access": {
+          "$ref": "#/$defs/textFieldEntry"
+        },
+        "building_type": {
+          "$ref": "#/$defs/textFieldEntry"
+        },
+        "target_area_or_scale": {
+          "$ref": "#/$defs/textFieldEntry"
+        },
+        "users": {
+          "$ref": "#/$defs/textFieldEntry"
+        },
+        "required_spaces": {
+          "$ref": "#/$defs/listFieldEntry"
+        },
+        "budget_range": {
+          "$ref": "#/$defs/textFieldEntry"
+        },
+        "target_opening_date": {
+          "$ref": "#/$defs/textFieldEntry"
+        },
+        "design_goals": {
+          "$ref": "#/$defs/listFieldEntry"
+        },
+        "known_regulations_or_assumptions": {
+          "$ref": "#/$defs/textFieldEntry"
+        }
+      }
+    },
+    "status_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "counts",
+        "provided",
+        "unknown",
+        "missing"
+      ],
+      "properties": {
+        "counts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "provided",
+            "unknown",
+            "missing"
+          ],
+          "properties": {
+            "provided": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "unknown": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "missing": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "provided": {
+          "$ref": "#/$defs/fieldNameList"
+        },
+        "unknown": {
+          "$ref": "#/$defs/fieldNameList"
+        },
+        "missing": {
+          "$ref": "#/$defs/fieldNameList"
+        }
+      }
+    },
+    "human_authoring_todos": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/humanTodo"
+      },
+      "description": "One explicit human todo per UNKNOWN or MISSING field, in ledger field order. Empty when every field is PROVIDED."
+    },
+    "human_authored_chapters": {
+      "const": [
+        "sources",
+        "evidence",
+        "constraints",
+        "relations",
+        "program_spaces",
+        "hypotheses",
+        "options",
+        "criteria",
+        "dependencies",
+        "deliverables"
+      ],
+      "description": "Chapters that only a human may author into the ADR-0001 input brief and the ARCH-078 assembly draft. Injecting their content into this handoff fails the schema."
+    },
+    "not_generated": {
+      "const": [
+        "SRC",
+        "Evidence",
+        "CARD",
+        "Candidate",
+        "VERIFIED",
+        "massing",
+        "plan",
+        "media",
+        "PPTX"
+      ],
+      "description": "Artifacts this entry point never generates or registers."
+    }
+  },
+  "$defs": {
+    "textFieldEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "normalized_value",
+        "raw_present"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "PROVIDED",
+            "UNKNOWN",
+            "MISSING"
+          ]
+        },
+        "normalized_value": {
+          "oneOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "raw_present": {
+          "type": "boolean"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "PROVIDED"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "raw_present": {
+                "const": true
+              },
+              "normalized_value": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "UNKNOWN"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "raw_present": {
+                "const": true
+              },
+              "normalized_value": {
+                "type": "null"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "MISSING"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "raw_present": {
+                "const": false
+              },
+              "normalized_value": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "listFieldEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "normalized_value",
+        "raw_present"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "PROVIDED",
+            "UNKNOWN",
+            "MISSING"
+          ]
+        },
+        "normalized_value": {
+          "oneOf": [
+            {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "raw_present": {
+          "type": "boolean"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "PROVIDED"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "raw_present": {
+                "const": true
+              },
+              "normalized_value": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "UNKNOWN"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "raw_present": {
+                "const": true
+              },
+              "normalized_value": {
+                "type": "null"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "MISSING"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "raw_present": {
+                "const": false
+              },
+              "normalized_value": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "fieldNameList": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/fieldName"
+      }
+    },
+    "fieldName": {
+      "enum": [
+        "project_name",
+        "project_location",
+        "site_boundary_or_redline",
+        "north_orientation",
+        "road_edges_and_access",
+        "building_type",
+        "target_area_or_scale",
+        "users",
+        "required_spaces",
+        "budget_range",
+        "target_opening_date",
+        "design_goals",
+        "known_regulations_or_assumptions"
+      ],
+      "description": "One of the exactly thirteen known brief fields; any other name fails the schema."
+    },
+    "humanTodo": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "field",
+        "status",
+        "todo"
+      ],
+      "properties": {
+        "field": {
+          "$ref": "#/$defs/fieldName"
+        },
+        "status": {
+          "enum": [
+            "UNKNOWN",
+            "MISSING"
+          ]
+        },
+        "todo": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  }
+}

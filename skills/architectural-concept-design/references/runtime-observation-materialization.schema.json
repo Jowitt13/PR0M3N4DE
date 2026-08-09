@@ -1,0 +1,112 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://architecture-pre-design-skills.local/schemas/runtime-observation-materialization/1.0.0",
+  "title": "Runtime Observation Materialization Input",
+  "description": "A versioned, run-scoped, offline gate input that converts six future, individually human-authorized live-canary short-text observations into the existing runtime candidate handoff. The materializer never performs network access, never runs a canary, never selects, and never produces any output when a single gate fails. The output contract is exclusively the existing runtime-candidate-handoff Schema; this document defines only the gated input.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract_version",
+    "materialization_id",
+    "handoff_id",
+    "source_observations"
+  ],
+  "properties": {
+    "contract_version": {"const": "1.0.0"},
+    "materialization_id": {
+      "type": "string",
+      "pattern": "^RCM-[0-9]{3,}$",
+      "description": "Stable identifier for this finite, offline materialization run."
+    },
+    "handoff_id": {
+      "type": "string",
+      "pattern": "^RCH-[0-9]{3,}$",
+      "description": "Identifier forwarded verbatim to the produced runtime candidate handoff."
+    },
+    "source_observations": {
+      "type": "array",
+      "minItems": 6,
+      "maxItems": 6,
+      "items": {"$ref": "#/$defs/AuthorizedObservation"},
+      "description": "Exactly six distinct, individually authorized completed-canary observations."
+    }
+  },
+  "$defs": {
+    "AuthorizedObservation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_locator",
+        "accessed_at",
+        "outcome",
+        "reason_code",
+        "http_status",
+        "observed_url",
+        "audit_status",
+        "source_text_trust",
+        "instruction_handling",
+        "short_text",
+        "human_authorization"
+      ],
+      "properties": {
+        "source_locator": {"type": "string", "format": "uri", "minLength": 1, "maxLength": 600},
+        "accessed_at": {"type": "string", "format": "date-time"},
+        "outcome": {
+          "const": "completed",
+          "description": "Only a completed single-page canary may be materialized."
+        },
+        "reason_code": {
+          "const": "LIVE_CANARY_COMPLETED_SOURCE_UNTRUSTED",
+          "description": "The exact completion reason code of the bounded live canary."
+        },
+        "http_status": {
+          "const": 200,
+          "description": "Only a clean 200 observation is eligible; any block, challenge, or redirect is ineligible."
+        },
+        "observed_url": {
+          "type": "string",
+          "format": "uri",
+          "minLength": 1,
+          "maxLength": 600,
+          "description": "Must equal source_locator exactly; a redirect makes the observation ineligible."
+        },
+        "audit_status": {"const": "live_canary_unverified"},
+        "source_text_trust": {"const": "untrusted_page_content"},
+        "instruction_handling": {"const": "data_only_ignore_instructions"},
+        "short_text": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["project_title"],
+          "properties": {
+            "project_title": {"type": "string", "minLength": 1, "maxLength": 280},
+            "short_project_description": {"type": "string", "minLength": 1, "maxLength": 280}
+          },
+          "description": "Only the two authorized sanitized short-text fields. HTML, DOM, cookies, scripts, media, query values, exception text, and browser state are structurally rejected."
+        },
+        "human_authorization": {"$ref": "#/$defs/HumanAuthorization"}
+      }
+    },
+    "HumanAuthorization": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["confirmed", "confirmed_by", "confirmed_at", "authorization_reference"],
+      "properties": {
+        "confirmed": {"const": true},
+        "confirmed_by": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120,
+          "description": "A human record label; agent and model identities are rejected by the materializer."
+        },
+        "confirmed_at": {"type": "string", "format": "date-time"},
+        "authorization_reference": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 240,
+          "description": "One independent per-source authorization reference; the six references must be pairwise distinct."
+        }
+      },
+      "description": "One independent, per-source, per-run human authorization. It is a gate record, not a license, permission, clearance, or VERIFIED claim."
+    }
+  }
+}

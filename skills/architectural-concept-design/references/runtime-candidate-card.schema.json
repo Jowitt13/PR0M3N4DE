@@ -1,0 +1,221 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://architecture-pre-design-skills.local/schemas/runtime-candidate-card-set/1.0.0",
+  "title": "Runtime Candidate Card Set",
+  "description": "Ephemeral, per-project candidate records produced only after an approved local source-access gate. These records are not built-in CARD-xxx corpus cards and are not ADR-0001 state-package Sources or Evidence Records.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract_version", "run_id", "registry_version", "candidates", "selection"],
+  "properties": {
+    "contract_version": {"const": "1.0.0"},
+    "run_id": {
+      "type": "string",
+      "pattern": "^RCR-[0-9]{3,}$",
+      "description": "Stable identifier for this finite runtime research run."
+    },
+    "registry_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+      "description": "Exact source-access registry version evaluated for this run."
+    },
+    "candidates": {
+      "type": "array",
+      "maxItems": 6,
+      "items": {"$ref": "#/$defs/Candidate"},
+      "description": "At most six conforming, ephemeral candidate cards."
+    },
+    "insufficiency_report": {"$ref": "#/$defs/InsufficiencyReport"},
+    "selection": {"$ref": "#/$defs/HumanSelection"}
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {"candidates": {"maxItems": 5}},
+        "required": ["candidates"]
+      },
+      "then": {"required": ["insufficiency_report"]},
+      "else": {"not": {"required": ["insufficiency_report"]}}
+    }
+  ],
+  "$defs": {
+    "Candidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "candidate_status",
+        "source_registry_version",
+        "project_identity",
+        "source",
+        "relevance",
+        "spatial_operation",
+        "visual_strategy",
+        "uncertainties",
+        "evidence_registration_status"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^RC-[0-9]{3,}$",
+          "description": "Runtime candidate ID. CARD-xxx is reserved for the built-in corpus."
+        },
+        "candidate_status": {"const": "UNSELECTED_RUNTIME_CANDIDATE"},
+        "source_registry_version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+          "description": "Exact source registry version used to normalize this candidate."
+        },
+        "project_identity": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["name", "architect_or_firm", "location", "completion_year"],
+          "properties": {
+            "name": {"type": "string", "minLength": 1},
+            "architect_or_firm": {"type": ["string", "null"]},
+            "location": {"type": ["string", "null"]},
+            "completion_year": {"type": ["integer", "null"], "minimum": 0}
+          }
+        },
+        "source": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "domain",
+            "access_method",
+            "source_capture_scope",
+            "canonical_locator",
+            "accessed_at",
+            "request_gate_decision",
+            "gate_receipt"
+          ],
+          "properties": {
+            "domain": {"type": "string", "minLength": 1},
+            "access_method": {"type": "string", "minLength": 1},
+            "source_capture_scope": {
+              "enum": ["structured_metadata_only", "manual_title_and_locator_only"]
+            },
+            "canonical_locator": {"type": "string", "format": "uri", "minLength": 1},
+            "accessed_at": {"type": "string", "format": "date-time"},
+            "request_gate_decision": {"enum": ["REQUEST_READY", "MANUAL_ONLY"]},
+            "gate_receipt": {
+              "oneOf": [
+                {"type": "null"},
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["operation", "endpoint", "response_kind"],
+                  "properties": {
+                    "operation": {"type": "string", "minLength": 1},
+                    "endpoint": {"type": "string", "format": "uri", "minLength": 1},
+                    "response_kind": {"type": "string", "minLength": 1}
+                  }
+                }
+              ],
+              "description": "Non-secret subset of the local REQUEST_READY result. It never includes query values, POST bodies, credentials, or provider response content."
+            }
+          }
+        },
+        "relevance": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["brief_linked_reasons"],
+          "properties": {
+            "brief_linked_reasons": {
+              "type": "array",
+              "minItems": 1,
+              "items": {"type": "string", "minLength": 1}
+            }
+          }
+        },
+        "spatial_operation": {
+          "oneOf": [
+            {"type": "null"},
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "authorship",
+                "summary",
+                "preconditions",
+                "expected_effects",
+                "limitations",
+                "falsification_condition"
+              ],
+              "properties": {
+                "authorship": {"const": "team_authored_candidate_hypothesis"},
+                "summary": {"type": "string", "minLength": 1},
+                "preconditions": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+                "expected_effects": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+                "limitations": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+                "falsification_condition": {"type": "string", "minLength": 1}
+              }
+            }
+          ],
+          "description": "A team-authored, falsifiable candidate hypothesis; it is not a copied source claim or ADR-0001 Evidence Record."
+        },
+        "visual_strategy": {"const": "team_original_diagram_only"},
+        "uncertainties": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "evidence_registration_status": {
+          "const": "unregistered_until_human_selected",
+          "description": "SRC-xxx and E-xxx registration happens only after explicit human selection and actual use."
+        }
+      }
+    },
+    "InsufficiencyReport": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["available_count", "no_fabrication", "reason", "safe_next_actions"],
+      "properties": {
+        "available_count": {"type": "integer", "minimum": 0, "maximum": 5},
+        "no_fabrication": {"const": true},
+        "reason": {"type": "string", "minLength": 1},
+        "safe_next_actions": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "HumanSelection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["state"],
+      "properties": {
+        "state": {"enum": ["AWAITING_HUMAN_SELECTION", "HUMAN_SELECTED"]},
+        "selected_candidate_ids": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 3,
+          "uniqueItems": true,
+          "items": {"type": "string", "pattern": "^RC-[0-9]{3,}$"}
+        },
+        "selected_by": {"type": "string", "minLength": 1},
+        "selected_at": {"type": "string", "format": "date-time"},
+        "selection_method": {"const": "explicit_human_selection"}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"state": {"const": "AWAITING_HUMAN_SELECTION"}}, "required": ["state"]},
+          "then": {
+            "not": {
+              "anyOf": [
+                {"required": ["selected_candidate_ids"]},
+                {"required": ["selected_by"]},
+                {"required": ["selected_at"]},
+                {"required": ["selection_method"]}
+              ]
+            }
+          }
+        },
+        {
+          "if": {"properties": {"state": {"const": "HUMAN_SELECTED"}}, "required": ["state"]},
+          "then": {"required": ["selected_candidate_ids", "selected_by", "selected_at", "selection_method"]}
+        }
+      ]
+    }
+  }
+}

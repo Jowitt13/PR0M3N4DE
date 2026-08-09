@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://architecture-pre-design-skills.local/schemas/area-schedule/1.0.0",
+  "title": "Area Schedule Input",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["spaces"],
+  "properties": {
+    "spaces": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "name", "area"],
+        "properties": {
+          "id": {"type": "string", "pattern": "^S-[0-9]{3,}$"},
+          "name": {"type": "string", "minLength": 1},
+          "area": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["value", "unit"],
+            "properties": {
+              "value": {"type": "number", "minimum": 0},
+              "unit": {"const": "m2"}
+            }
+          }
+        }
+      }
+    },
+    "grossing_factor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "unit"],
+      "properties": {
+        "value": {"type": "number", "exclusiveMinimum": 0},
+        "unit": {"const": "ratio"}
+      }
+    }
+  }
+}

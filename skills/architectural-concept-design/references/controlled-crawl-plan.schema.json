@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://architecture-pre-design-skills.local/schemas/controlled-crawl-plan/1.0.0",
+  "title": "Controlled Crawl Plan",
+  "description": "A finite, privacy-minimized, per-run plan for a future separately installed Crawl4AI adapter. It is not a request, downloader, browser configuration, candidate set, or media manifest.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract_version",
+    "plan_id",
+    "project_id",
+    "registry_version",
+    "source_domain",
+    "privacy_safe_topics",
+    "requested_pages",
+    "minimum_delay_ms",
+    "run_confirmation",
+    "request_controls"
+  ],
+  "properties": {
+    "contract_version": {"const": "1.0.0"},
+    "plan_id": {"type": "string", "pattern": "^CCP-[0-9]{3,}$"},
+    "project_id": {"type": "string", "minLength": 1, "maxLength": 120},
+    "registry_version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+    "source_domain": {"type": "string", "pattern": "^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+$"},
+    "privacy_safe_topics": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 8,
+      "items": {"type": "string", "minLength": 1, "maxLength": 120}
+    },
+    "requested_pages": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/RequestedPage"}
+    },
+    "minimum_delay_ms": {"type": "integer", "minimum": 1},
+    "run_confirmation": {"$ref": "#/$defs/RunConfirmation"},
+    "request_controls": {"$ref": "#/$defs/RequestControls"}
+  },
+  "$defs": {
+    "RequestedPage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "url", "depth", "parent_page_id"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^CRP-[0-9]{3,}$"},
+        "url": {"type": "string", "format": "uri", "minLength": 1},
+        "depth": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "The source contract supplies the maximum. A source max_depth of zero permits only its exact seed page."
+        },
+        "parent_page_id": {"type": ["string", "null"], "pattern": "^CRP-[0-9]{3,}$"}
+      }
+    },
+    "RunConfirmation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["confirmed", "confirmed_by", "confirmed_at", "confirmation_reference"],
+      "properties": {
+        "confirmed": {"const": true},
+        "confirmed_by": {"type": "string", "minLength": 1},
+        "confirmed_at": {"type": "string", "format": "date-time"},
+        "confirmation_reference": {"type": "string", "minLength": 1, "maxLength": 240}
+      }
+    },
+    "RequestControls": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "follow_redirects",
+        "html_page_scrape",
+        "custom_user_agent",
+        "random_user_agent",
+        "injected_browser_script",
+        "fallback_fetch",
+        "cookie_import",
+        "credentials",
+        "login_state",
+        "media_download",
+        "asset_scrape",
+        "bulk_download",
+        "raw_html_retention",
+        "stealth",
+        "browser_impersonation",
+        "captcha_solving",
+        "cloudflare_solving",
+        "proxy_rotation",
+        "curl_impersonate"
+      ],
+      "properties": {
+        "follow_redirects": {"const": false},
+        "html_page_scrape": {"const": false},
+        "custom_user_agent": {"const": false},
+        "random_user_agent": {"const": false},
+        "injected_browser_script": {"const": false},
+        "fallback_fetch": {"const": false},
+        "cookie_import": {"const": false},
+        "credentials": {"const": false},
+        "login_state": {"const": false},
+        "media_download": {"const": false},
+        "asset_scrape": {"const": false},
+        "bulk_download": {"const": false},
+        "raw_html_retention": {"const": false},
+        "stealth": {"const": false},
+        "browser_impersonation": {"const": false},
+        "captcha_solving": {"const": false},
+        "cloudflare_solving": {"const": false},
+        "proxy_rotation": {"const": false},
+        "curl_impersonate": {"const": false}
+      }
+    }
+  }
+}

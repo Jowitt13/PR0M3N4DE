@@ -1,0 +1,209 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://architecture-pre-design-skills.local/schemas/normalized-brief-ledger-input/1.0.0",
+  "title": "Human Project Brief Input",
+  "description": "A loose, human-authored project brief accepted by the normalization entry point. Each of the thirteen known fields may be a provided value, the explicit string \"UNKNOWN\", or an explicit status object. An empty or whitespace-only string cannot masquerade as UNKNOWN. Unknown keys are rejected. Absence of an optional field is later reported as MISSING; it is never inferred into a real fact.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "project_name"
+  ],
+  "properties": {
+    "project_name": {
+      "$ref": "#/$defs/textField"
+    },
+    "project_location": {
+      "$ref": "#/$defs/textField"
+    },
+    "site_boundary_or_redline": {
+      "$ref": "#/$defs/textField"
+    },
+    "north_orientation": {
+      "$ref": "#/$defs/textField"
+    },
+    "road_edges_and_access": {
+      "$ref": "#/$defs/textField"
+    },
+    "building_type": {
+      "$ref": "#/$defs/textField"
+    },
+    "target_area_or_scale": {
+      "$ref": "#/$defs/textField"
+    },
+    "users": {
+      "$ref": "#/$defs/textField"
+    },
+    "required_spaces": {
+      "$ref": "#/$defs/listField"
+    },
+    "budget_range": {
+      "$ref": "#/$defs/textField"
+    },
+    "target_opening_date": {
+      "$ref": "#/$defs/textField"
+    },
+    "design_goals": {
+      "$ref": "#/$defs/listField"
+    },
+    "known_regulations_or_assumptions": {
+      "$ref": "#/$defs/textField"
+    }
+  },
+  "$defs": {
+    "unknownLiteral": {
+      "const": "UNKNOWN",
+      "description": "Explicit human declaration that the field value is unknown."
+    },
+    "providedString": {
+      "type": "string",
+      "pattern": "\\S",
+      "not": {
+        "const": "UNKNOWN"
+      },
+      "description": "A provided text value that contains at least one non-whitespace character and is not the reserved UNKNOWN literal."
+    },
+    "providedStringArray": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "pattern": "\\S"
+      },
+      "description": "A non-empty list of provided text values, each with a non-whitespace character."
+    },
+    "statusObjectText": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "PROVIDED",
+            "UNKNOWN"
+          ]
+        },
+        "value": {
+          "type": "string",
+          "pattern": "\\S"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "PROVIDED"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "value"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "UNKNOWN"
+              }
+            }
+          },
+          "then": {
+            "not": {
+              "required": [
+                "value"
+              ]
+            }
+          }
+        }
+      ],
+      "description": "An explicit text status object. PROVIDED requires a non-empty string value; UNKNOWN must not carry a value; a list value is rejected. MISSING cannot be declared and is derived only from absence."
+    },
+    "statusObjectList": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "PROVIDED",
+            "UNKNOWN"
+          ]
+        },
+        "value": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "pattern": "\\S"
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "PROVIDED"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "value"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "UNKNOWN"
+              }
+            }
+          },
+          "then": {
+            "not": {
+              "required": [
+                "value"
+              ]
+            }
+          }
+        }
+      ],
+      "description": "An explicit list status object. PROVIDED requires a non-empty list of non-empty strings; UNKNOWN must not carry a value; a string value is rejected. MISSING cannot be declared and is derived only from absence."
+    },
+    "textField": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/providedString"
+        },
+        {
+          "$ref": "#/$defs/unknownLiteral"
+        },
+        {
+          "$ref": "#/$defs/statusObjectText"
+        }
+      ]
+    },
+    "listField": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/providedStringArray"
+        },
+        {
+          "$ref": "#/$defs/unknownLiteral"
+        },
+        {
+          "$ref": "#/$defs/statusObjectList"
+        }
+      ]
+    }
+  }
+}

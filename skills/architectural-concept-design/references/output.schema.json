@@ -1,0 +1,502 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://architecture-pre-design-skills.local/schemas/output/1.0.0",
+  "title": "Architecture Pre-design State Package",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "skill_version", "project_id", "state", "sources", "dependencies", "evidence", "options", "decisions", "deliverables"],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "skill_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(-[0-9A-Za-z.-]+)?$",
+      "description": "Skill semantic version."
+    },
+    "project_id": {
+      "type": "string",
+      "pattern": "^P-[0-9A-Za-z-]+$",
+      "description": "Project identifier referencing the input project."
+    },
+    "state": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["input_hash", "generated_at"],
+      "properties": {
+        "input_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "description": "SHA-256 of the validated input."
+        },
+        "generated_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 generation timestamp."
+        },
+        "model": {
+          "type": "string",
+          "description": "Model or agent that generated the output."
+        }
+      }
+    },
+    "sources": {
+      "type": "array",
+      "items": {
+        "$ref": "https://architecture-pre-design-skills.local/schemas/evidence/1.0.0#/$defs/Source"
+      },
+      "description": "Inherited input sources."
+    },
+    "dependencies": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "upstream_id", "downstream_id"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^DEP-[0-9]{3,}$",
+            "description": "Stable dependency identifier."
+          },
+          "upstream_id": {
+            "type": "string",
+            "description": "Upstream entity that the downstream depends on."
+          },
+          "downstream_id": {
+            "type": "string",
+            "description": "Downstream entity that depends on the upstream."
+          },
+          "rationale": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Architectural reasoning for the dependency."
+          },
+          "stale": {
+            "$ref": "https://architecture-pre-design-skills.local/schemas/evidence/1.0.0#/$defs/Stale"
+          }
+        }
+      },
+      "description": "Top-level sole authority for all directed dependency edges. Semantics: downstream depends on upstream."
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "$ref": "https://architecture-pre-design-skills.local/schemas/evidence/1.0.0#/$defs/EvidenceRecord"
+      },
+      "description": "Inherited input evidence plus new output-only evidence (INFERRED, ASSUMED, PROPOSED). PROVIDED and VERIFIED must originate from input."
+    },
+    "constraints": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "description", "evidence_ids", "status"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^C-[0-9]{3,}$",
+            "description": "Stable constraint identifier."
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Constraint description."
+          },
+          "evidence_ids": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "pattern": "^E-[0-9]{3,}$"
+            },
+            "description": "Evidence IDs supporting this constraint."
+          },
+          "status": {
+            "enum": ["candidate", "confirmed", "superseded"],
+            "description": "Constraint status. Inherited from input; may be updated."
+          },
+          "stale": {
+            "$ref": "https://architecture-pre-design-skills.local/schemas/evidence/1.0.0#/$defs/Stale"
+          }
+        }
+      },
+      "description": "Inherited input constraints; may be updated with candidate/confirmed/superseded status."
+    },
+    "spaces": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "name", "area"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^S-[0-9]{3,}$",
+            "description": "Stable space identifier."
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Space name."
+          },
+          "area": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["value", "unit"],
+            "properties": {
+              "value": {
+                "type": "number",
+                "minimum": 0,
+                "description": "Numeric area value."
+              },
+              "unit": {
+                "const": "m2",
+                "description": "Area unit (square metres)."
+              }
+            }
+          },
+          "stale": {
+            "$ref": "https://architecture-pre-design-skills.local/schemas/evidence/1.0.0#/$defs/Stale"
+          }
+        }
+      },
+      "description": "Inherited input spaces."
+    },
+    "relations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "from_space_id", "to_space_id", "priority"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^R-[0-9]{3,}$",
+            "description": "Stable relation identifier."
+          },
+          "from_space_id": {
+            "type": "string",
+            "pattern": "^S-[0-9]{3,}$",
+            "description": "Source space ID."
+          },
+          "to_space_id": {
+            "type": "string",
+            "pattern": "^S-[0-9]{3,}$",
+            "description": "Target space ID."
+          },
+          "priority": {
+            "enum": ["required", "preferred", "avoid"],
+            "description": "Adjacency priority."
+          },
+          "rationale": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Architectural reasoning for the relation."
+          },
+          "stale": {
+            "$ref": "https://architecture-pre-design-skills.local/schemas/evidence/1.0.0#/$defs/Stale"
+          }
+        }
+      },
+      "description": "Inherited input relations."
+    },
+    "hypotheses": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "description", "evidence_ids"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^H-[0-9]{3,}$",
+            "description": "Stable hypothesis identifier."
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Hypothesis description."
+          },
+          "evidence_ids": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "pattern": "^E-[0-9]{3,}$"
+            },
+            "description": "Evidence IDs supporting this hypothesis."
+          },
+          "stale": {
+            "$ref": "https://architecture-pre-design-skills.local/schemas/evidence/1.0.0#/$defs/Stale"
+          }
+        }
+      },
+      "description": "Output-only design hypotheses (H-xxx)."
+    },
+    "options": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "name", "spatial_operation", "differentiation_axes", "evidence_ids"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^O-[0-9]{3,}$",
+            "description": "Stable option identifier."
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Option name."
+          },
+          "spatial_operation": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Primary spatial operation of the option."
+          },
+          "differentiation_axes": {
+            "type": "array",
+            "minItems": 3,
+            "items": {
+              "enum": ["site", "massing", "organization", "circulation", "structure", "sequence", "environment"]
+            },
+            "description": "Axes along which this option differs from others."
+          },
+          "evidence_ids": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "pattern": "^E-[0-9]{3,}$"
+            },
+            "description": "Evidence IDs supporting this option."
+          },
+          "assessments": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["criterion_id", "rating", "rationale", "evidence_ids"],
+              "properties": {
+                "criterion_id": {
+                  "type": "string",
+                  "pattern": "^K-[0-9]{3,}$",
+                  "description": "Criterion being assessed."
+                },
+                "rating": {
+                  "enum": ["strong", "adequate", "weak", "not_applicable"],
+                  "description": "Architectural rating against the criterion."
+                },
+                "rationale": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Free-text architectural reasoning."
+                },
+                "evidence_ids": {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {
+                    "type": "string",
+                    "pattern": "^E-[0-9]{3,}$"
+                  },
+                  "description": "Evidence IDs supporting this assessment."
+                }
+              }
+            },
+            "description": "Zero or more criterion assessments. Assessments live on the Option, not on the Criterion."
+          },
+          "stale": {
+            "$ref": "https://architecture-pre-design-skills.local/schemas/evidence/1.0.0#/$defs/Stale"
+          }
+        }
+      },
+      "description": "Concept options (O-xxx). Minimum 2, with substantively different spatial operations."
+    },
+    "criteria": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "name", "evidence_ids"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^K-[0-9]{3,}$",
+            "description": "Stable criterion identifier."
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Criterion name."
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Criterion description."
+          },
+          "evidence_ids": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "pattern": "^E-[0-9]{3,}$"
+            },
+            "description": "Evidence IDs supporting this criterion."
+          },
+          "stale": {
+            "$ref": "https://architecture-pre-design-skills.local/schemas/evidence/1.0.0#/$defs/Stale"
+          }
+        }
+      },
+      "description": "Comparison criteria (K-xxx)."
+    },
+    "decisions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "decision_type", "rationale", "decided_by"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^D-[0-9]{3,}$",
+            "description": "Stable decision identifier."
+          },
+          "decision_type": {
+            "enum": ["select", "revise", "request-new", "defer"],
+            "description": "Decision discriminator."
+          },
+          "rationale": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Architectural reasoning for the decision."
+          },
+          "decided_by": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Human identity of the decision-maker."
+          },
+          "chosen_option_id": {
+            "type": "string",
+            "pattern": "^O-[0-9]{3,}$",
+            "description": "Selected option ID. Required for select decisions."
+          },
+          "criteria_ids": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "pattern": "^K-[0-9]{3,}$"
+            },
+            "description": "Criteria used for selection. Required for select decisions."
+          },
+          "target_option_id": {
+            "type": "string",
+            "pattern": "^O-[0-9]{3,}$",
+            "description": "Option to revise. Required for revise decisions."
+          },
+          "revision_instructions": {
+            "type": "string",
+            "minLength": 1,
+            "description": "What to change. Required for revise decisions."
+          },
+          "requested_differentiation_axes": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "enum": ["site", "massing", "organization", "circulation", "structure", "sequence", "environment"]
+            },
+            "description": "Requested differentiation axes for new options. Required for request-new decisions."
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Why new options are needed. Required for request-new decisions."
+          },
+          "defer_reason": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Why the decision is deferred. Required for defer decisions."
+          },
+          "revisit_trigger": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Condition to revisit. Required for defer decisions."
+          },
+          "stale": {
+            "$ref": "https://architecture-pre-design-skills.local/schemas/evidence/1.0.0#/$defs/Stale"
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {"decision_type": {"const": "select"}},
+              "required": ["decision_type"]
+            },
+            "then": {
+              "required": ["chosen_option_id", "criteria_ids"]
+            }
+          },
+          {
+            "if": {
+              "properties": {"decision_type": {"const": "revise"}},
+              "required": ["decision_type"]
+            },
+            "then": {
+              "required": ["target_option_id", "revision_instructions"]
+            }
+          },
+          {
+            "if": {
+              "properties": {"decision_type": {"const": "request-new"}},
+              "required": ["decision_type"]
+            },
+            "then": {
+              "required": ["requested_differentiation_axes", "reason"]
+            }
+          },
+          {
+            "if": {
+              "properties": {"decision_type": {"const": "defer"}},
+              "required": ["decision_type"]
+            },
+            "then": {
+              "required": ["defer_reason", "revisit_trigger"]
+            }
+          }
+        ]
+      },
+      "description": "Decisions (D-xxx). Decision types: select, revise, request-new, defer. Each type has distinct required fields."
+    },
+    "deliverables": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "type"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^A-[0-9]{3,}$",
+            "description": "Stable deliverable identifier."
+          },
+          "type": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Deliverable type (e.g. brief-ledger, option-comparison)."
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Deliverable description."
+          },
+          "stale": {
+            "$ref": "https://architecture-pre-design-skills.local/schemas/evidence/1.0.0#/$defs/Stale"
+          }
+        }
+      },
+      "description": "Output artifacts (A-xxx)."
+    }
+  }
+}

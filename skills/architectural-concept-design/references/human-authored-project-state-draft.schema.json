@@ -1,0 +1,108 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://architecture-pre-design-skills.local/schemas/human-authored-project-state-draft/1.0.0",
+  "title": "Human-Authored Project State Draft Declaration",
+  "description": "A local-only declaration that binds one human-authored ADR-0001 input brief and one human-authored ARCH-078 assembly draft to an ARCH-080 handoff. It contains no project, source, evidence, constraint, relation, space, hypothesis, option, criterion, dependency, deliverable, or decision content, and is never a direct assemble_project_state input. The attestation records only a caller statement; it is not identity verification or a VERIFIED evidence label.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "declaration_kind",
+    "authoring_state",
+    "not_direct_assembly_input",
+    "handoff_binding",
+    "human_attestation",
+    "todo_resolutions"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "declaration_kind": {
+      "const": "HUMAN_AUTHORED_PROJECT_STATE_DRAFT_DECLARATION"
+    },
+    "authoring_state": {
+      "const": "READY_FOR_ARCH_078_ASSEMBLY"
+    },
+    "not_direct_assembly_input": {
+      "const": true
+    },
+    "handoff_binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "handoff_kind",
+        "handoff_sha256"
+      ],
+      "properties": {
+        "handoff_kind": {
+          "const": "HUMAN_MEDIATED_PROJECT_STATE_ASSEMBLY_HANDOFF"
+        },
+        "handoff_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      }
+    },
+    "human_attestation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "attested_by",
+        "attested_at",
+        "statement"
+      ],
+      "properties": {
+        "attested_by": {
+          "type": "string",
+          "minLength": 1,
+          "description": "A caller-supplied human identifier. This field is not identity verification."
+        },
+        "attested_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "statement": {
+          "const": "CALLER_ASSERTS_HUMAN_AUTHORED_CONTENT"
+        }
+      }
+    },
+    "todo_resolutions": {
+      "type": "array",
+      "description": "One human-authored reconciliation per UNKNOWN or MISSING handoff field, in handoff order. The validator checks exact coverage and prior status.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "field",
+          "prior_status",
+          "resolution",
+          "rationale"
+        ],
+        "properties": {
+          "field": {
+            "$ref": "https://architecture-pre-design-skills.local/schemas/normalized-brief-human-assembly-handoff/1.0.0#/$defs/fieldName"
+          },
+          "prior_status": {
+            "enum": [
+              "UNKNOWN",
+              "MISSING"
+            ]
+          },
+          "resolution": {
+            "enum": [
+              "HUMAN_PROVIDED",
+              "REMAINS_UNKNOWN",
+              "CONFIRMED_ABSENT"
+            ],
+            "description": "HUMAN_PROVIDED means only that the caller supplied information; it is never a VERIFIED label."
+          },
+          "rationale": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  }
+}

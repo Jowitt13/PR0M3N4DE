@@ -1,0 +1,20 @@
+{
+  "lock_version": "1.0.0",
+  "provider": "playwright",
+  "playwright_version": "1.61.0",
+  "playwright_wheel": {
+    "filename": "playwright-1.61.0-py3-none-win_amd64.whl",
+    "url": "https://files.pythonhosted.org/packages/6c/fd/2b78036e5fbe9d5f5645bbe08a1eac7160c51243c0093963edbcf67c35d9/playwright-1.61.0-py3-none-win_amd64.whl",
+    "sha256": "35c6cc4589a5d00964a59d7b3e59641e0aac0c02f15479a7af77d20f6bc79597"
+  },
+  "browser": {
+    "name": "chromium",
+    "revision": "1228",
+    "version": "149.0.7827.55",
+    "installed_directory": "chromium-1228",
+    "browsers_json_sha256": "ee39bc924bc3d1bd895626c2910f1292d109bbfeeb5abd113acb45e1951cc942",
+    "source": "https://raw.githubusercontent.com/microsoft/playwright/v1.61.0/packages/playwright-core/browsers.json"
+  },
+  "metadata_snapshot": "playwright-browsers.json",
+  "supported_platform": "windows-x86_64"
+}

@@ -1,0 +1,4 @@
+interface:
+  display_name: "建筑学前期方案设计"
+  short_description: "将任务书、场地与案例信息转化为可追溯、可比较的建筑前期方案。"
+  default_prompt: "Use $architectural-concept-design to turn an architecture brief into traceable early-design options."

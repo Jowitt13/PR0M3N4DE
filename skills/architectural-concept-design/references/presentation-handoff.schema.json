@@ -1,0 +1,206 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://architecture-pre-design-skills.local/schemas/presentation-handoff/1.0.0",
+  "title": "Architecture Pre-design Presentation Handoff",
+  "description": "A local, traceable deck framework for an independently installed renderer. It is not a PPTX, renderer configuration, source-access request, or a state-package authority.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract_version",
+    "handoff_id",
+    "project_id",
+    "created_at",
+    "state_package",
+    "precedent_selection",
+    "architectural_chain",
+    "deck_framework",
+    "local_assets",
+    "rendering_boundary"
+  ],
+  "properties": {
+    "contract_version": {"const": "1.0.0"},
+    "handoff_id": {"type": "string", "pattern": "^PH-[0-9]{3,}$"},
+    "project_id": {"type": "string", "pattern": "^P-[A-Za-z0-9][A-Za-z0-9-]*$"},
+    "created_at": {"type": "string", "format": "date-time"},
+    "state_package": {"$ref": "#/$defs/StatePackageReference"},
+    "precedent_selection": {"$ref": "#/$defs/PrecedentSelection"},
+    "architectural_chain": {"$ref": "#/$defs/ArchitecturalChain"},
+    "deck_framework": {"$ref": "#/$defs/DeckFramework"},
+    "local_assets": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/LocalAsset"}
+    },
+    "rendering_boundary": {"$ref": "#/$defs/RenderingBoundary"}
+  },
+  "$defs": {
+    "Sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "SemVer": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+    "StatePackageReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["input_hash", "output_hash", "validated_at"],
+      "properties": {
+        "input_hash": {"$ref": "#/$defs/Sha256"},
+        "output_hash": {"$ref": "#/$defs/Sha256"},
+        "validated_at": {"type": "string", "format": "date-time"}
+      }
+    },
+    "SelectedPrecedent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "candidate_id",
+        "display_name",
+        "source_locator",
+        "source_accessed_at",
+        "spatial_operation",
+        "visual_strategy"
+      ],
+      "properties": {
+        "candidate_id": {"type": "string", "pattern": "^RC-[0-9]{3,}$"},
+        "display_name": {"type": "string", "minLength": 1},
+        "source_locator": {"type": "string", "format": "uri", "pattern": "^https://[^\\s]+$", "minLength": 1},
+        "source_accessed_at": {"type": "string", "format": "date-time"},
+        "spatial_operation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["authorship", "summary", "falsification_condition"],
+          "properties": {
+            "authorship": {"const": "team_authored_candidate_hypothesis"},
+            "summary": {"type": "string", "minLength": 1},
+            "falsification_condition": {"type": "string", "minLength": 1}
+          }
+        },
+        "visual_strategy": {"const": "team_original_diagram_only"}
+      }
+    },
+    "PrecedentSelection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["candidate_run_id", "source_registry_version", "selection_method", "selected_by", "selected_at", "selected_candidate_ids", "selected_precedents"],
+      "properties": {
+        "candidate_run_id": {"type": "string", "pattern": "^RCR-[0-9]{3,}$"},
+        "source_registry_version": {"$ref": "#/$defs/SemVer"},
+        "selection_method": {"const": "explicit_human_selection"},
+        "selected_by": {"type": "string", "minLength": 1},
+        "selected_at": {"type": "string", "format": "date-time"},
+        "selected_candidate_ids": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 3,
+          "uniqueItems": true,
+          "items": {"type": "string", "pattern": "^RC-[0-9]{3,}$"}
+        },
+        "selected_precedents": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 3,
+          "items": {"$ref": "#/$defs/SelectedPrecedent"}
+        }
+      }
+    },
+    "ArchitecturalChain": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "brief_evidence_ids",
+        "site_constraint_ids",
+        "program_space_ids",
+        "circulation_relation_ids",
+        "hypothesis_ids",
+        "option_ids",
+        "criterion_ids",
+        "decision_request_state"
+      ],
+      "properties": {
+        "brief_evidence_ids": {"$ref": "#/$defs/IdsE"},
+        "site_constraint_ids": {"$ref": "#/$defs/IdsC"},
+        "program_space_ids": {"$ref": "#/$defs/IdsS"},
+        "circulation_relation_ids": {"$ref": "#/$defs/IdsR"},
+        "hypothesis_ids": {"$ref": "#/$defs/IdsH"},
+        "option_ids": {"type": "array", "minItems": 2, "uniqueItems": true, "items": {"type": "string", "pattern": "^O-[0-9]{3,}$"}},
+        "criterion_ids": {"$ref": "#/$defs/IdsK"},
+        "decision_request_state": {"const": "AWAITING_EXPLICIT_HUMAN_DESIGN_DECISION"}
+      }
+    },
+    "IdsE": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "pattern": "^E-[0-9]{3,}$"}},
+    "IdsC": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "pattern": "^C-[0-9]{3,}$"}},
+    "IdsS": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "pattern": "^S-[0-9]{3,}$"}},
+    "IdsR": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "pattern": "^R-[0-9]{3,}$"}},
+    "IdsH": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "pattern": "^H-[0-9]{3,}$"}},
+    "IdsK": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "pattern": "^K-[0-9]{3,}$"}},
+    "DeckPage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["page_id", "title", "purpose", "required_entity_ids", "visual_strategy", "speaker_note"],
+      "properties": {
+        "page_id": {"type": "string"},
+        "title": {"type": "string", "minLength": 1},
+        "purpose": {"type": "string", "minLength": 1},
+        "required_entity_ids": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"type": "string", "pattern": "^(?:RC|E|C|S|R|H|O|K)-[0-9]{3,}$"}
+        },
+        "visual_strategy": {"const": "team_original_diagram_only"},
+        "speaker_note": {"type": "string", "minLength": 1}
+      }
+    },
+    "PageCover": {"allOf": [{"$ref": "#/$defs/DeckPage"}, {"properties": {"page_id": {"const": "P-01-cover"}}}]},
+    "PageBrief": {"allOf": [{"$ref": "#/$defs/DeckPage"}, {"properties": {"page_id": {"const": "P-02-brief-evidence"}}}]},
+    "PageSelection": {"allOf": [{"$ref": "#/$defs/DeckPage"}, {"properties": {"page_id": {"const": "P-03-precedent-selection"}}}]},
+    "PageOperations": {"allOf": [{"$ref": "#/$defs/DeckPage"}, {"properties": {"page_id": {"const": "P-04-precedent-operations"}}}]},
+    "PageSite": {"allOf": [{"$ref": "#/$defs/DeckPage"}, {"properties": {"page_id": {"const": "P-05-site-context"}}}]},
+    "PageProgram": {"allOf": [{"$ref": "#/$defs/DeckPage"}, {"properties": {"page_id": {"const": "P-06-program-circulation"}}}]},
+    "PageGrid": {"allOf": [{"$ref": "#/$defs/DeckPage"}, {"properties": {"page_id": {"const": "P-07-grid-core-height"}}}]},
+    "PageConcepts": {"allOf": [{"$ref": "#/$defs/DeckPage"}, {"properties": {"page_id": {"const": "P-08-concept-directions"}}}]},
+    "PageComparison": {"allOf": [{"$ref": "#/$defs/DeckPage"}, {"properties": {"page_id": {"const": "P-09-option-comparison"}}}]},
+    "PageDecision": {"allOf": [{"$ref": "#/$defs/DeckPage"}, {"properties": {"page_id": {"const": "P-10-human-decision-request"}}}]},
+    "PageActions": {"allOf": [{"$ref": "#/$defs/DeckPage"}, {"properties": {"page_id": {"const": "P-11-sources-risks-next-actions"}}}]},
+    "DeckFramework": {
+      "type": "array",
+      "minItems": 11,
+      "maxItems": 11,
+      "prefixItems": [
+        {"$ref": "#/$defs/PageCover"},
+        {"$ref": "#/$defs/PageBrief"},
+        {"$ref": "#/$defs/PageSelection"},
+        {"$ref": "#/$defs/PageOperations"},
+        {"$ref": "#/$defs/PageSite"},
+        {"$ref": "#/$defs/PageProgram"},
+        {"$ref": "#/$defs/PageGrid"},
+        {"$ref": "#/$defs/PageConcepts"},
+        {"$ref": "#/$defs/PageComparison"},
+        {"$ref": "#/$defs/PageDecision"},
+        {"$ref": "#/$defs/PageActions"}
+      ],
+      "items": false
+    },
+    "LocalAsset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["asset_id", "source_candidate_id", "kind", "relative_path"],
+      "properties": {
+        "asset_id": {"type": "string", "pattern": "^VA-[0-9]{3,}$"},
+        "source_candidate_id": {"type": "string", "pattern": "^RC-[0-9]{3,}$"},
+        "kind": {"const": "team_original_diagram"},
+        "relative_path": {"type": "string", "pattern": "^(?![A-Za-z]:)(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))[A-Za-z0-9._/-]+$"}
+      }
+    },
+    "RenderingBoundary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["renderer_name", "handoff_mode", "pptx_generated", "installation_attempted", "network_accessed", "third_party_media_packaged", "web_application_created"],
+      "properties": {
+        "renderer_name": {"const": "ppt-master"},
+        "handoff_mode": {"const": "EXTERNAL_RENDERER_NOT_INVOKED"},
+        "pptx_generated": {"const": false},
+        "installation_attempted": {"const": false},
+        "network_accessed": {"const": false},
+        "third_party_media_packaged": {"const": false},
+        "web_application_created": {"const": false}
+      }
+    }
+  }
+}

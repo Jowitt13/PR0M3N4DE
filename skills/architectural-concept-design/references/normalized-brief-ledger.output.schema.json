@@ -1,0 +1,367 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://architecture-pre-design-skills.local/schemas/normalized-brief-ledger-output/1.0.0",
+  "title": "Normalized Brief Ledger",
+  "description": "The deterministic normalization of a human project brief. Every one of the thirteen known fields is reported as PROVIDED, UNKNOWN, or MISSING and never silently inferred into a real fact. The ledger preserves the raw human input and offers normalized values that a human can author into an ADR-0001 input brief for the existing project-state assembly. It creates no evidence, source, hypothesis, option, decision, massing, plan, SRC, Evidence, CARD, or VERIFIED content.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "ledger_kind",
+    "input_hash",
+    "raw_input",
+    "fields",
+    "summary",
+    "downstream",
+    "not_generated"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "ledger_kind": {
+      "const": "normalized_brief_ledger"
+    },
+    "input_hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$",
+      "description": "SHA-256 of the canonical raw human input."
+    },
+    "raw_input": {
+      "type": "object",
+      "description": "The verbatim human brief, preserved without modification."
+    },
+    "fields": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "project_name",
+        "project_location",
+        "site_boundary_or_redline",
+        "north_orientation",
+        "road_edges_and_access",
+        "building_type",
+        "target_area_or_scale",
+        "users",
+        "required_spaces",
+        "budget_range",
+        "target_opening_date",
+        "design_goals",
+        "known_regulations_or_assumptions"
+      ],
+      "properties": {
+        "project_name": {
+          "$ref": "#/$defs/textFieldEntry"
+        },
+        "project_location": {
+          "$ref": "#/$defs/textFieldEntry"
+        },
+        "site_boundary_or_redline": {
+          "$ref": "#/$defs/textFieldEntry"
+        },
+        "north_orientation": {
+          "$ref": "#/$defs/textFieldEntry"
+        },
+        "road_edges_and_access": {
+          "$ref": "#/$defs/textFieldEntry"
+        },
+        "building_type": {
+          "$ref": "#/$defs/textFieldEntry"
+        },
+        "target_area_or_scale": {
+          "$ref": "#/$defs/textFieldEntry"
+        },
+        "users": {
+          "$ref": "#/$defs/textFieldEntry"
+        },
+        "required_spaces": {
+          "$ref": "#/$defs/listFieldEntry"
+        },
+        "budget_range": {
+          "$ref": "#/$defs/textFieldEntry"
+        },
+        "target_opening_date": {
+          "$ref": "#/$defs/textFieldEntry"
+        },
+        "design_goals": {
+          "$ref": "#/$defs/listFieldEntry"
+        },
+        "known_regulations_or_assumptions": {
+          "$ref": "#/$defs/textFieldEntry"
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "counts",
+        "provided",
+        "unknown",
+        "missing"
+      ],
+      "properties": {
+        "counts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "provided",
+            "unknown",
+            "missing"
+          ],
+          "properties": {
+            "provided": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "unknown": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "missing": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "provided": {
+          "$ref": "#/$defs/fieldNameList"
+        },
+        "unknown": {
+          "$ref": "#/$defs/fieldNameList"
+        },
+        "missing": {
+          "$ref": "#/$defs/fieldNameList"
+        }
+      }
+    },
+    "downstream": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "consumable_by",
+        "mapping_note"
+      ],
+      "properties": {
+        "consumable_by": {
+          "type": "string",
+          "minLength": 1
+        },
+        "mapping_note": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "not_generated": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  },
+  "$defs": {
+    "textFieldEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "normalized_value",
+        "raw_present"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "PROVIDED",
+            "UNKNOWN",
+            "MISSING"
+          ]
+        },
+        "normalized_value": {
+          "oneOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "raw_present": {
+          "type": "boolean"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "PROVIDED"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "raw_present": {
+                "const": true
+              },
+              "normalized_value": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "UNKNOWN"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "raw_present": {
+                "const": true
+              },
+              "normalized_value": {
+                "type": "null"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "MISSING"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "raw_present": {
+                "const": false
+              },
+              "normalized_value": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "listFieldEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "normalized_value",
+        "raw_present"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "PROVIDED",
+            "UNKNOWN",
+            "MISSING"
+          ]
+        },
+        "normalized_value": {
+          "oneOf": [
+            {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "raw_present": {
+          "type": "boolean"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "PROVIDED"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "raw_present": {
+                "const": true
+              },
+              "normalized_value": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "UNKNOWN"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "raw_present": {
+                "const": true
+              },
+              "normalized_value": {
+                "type": "null"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "MISSING"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "raw_present": {
+                "const": false
+              },
+              "normalized_value": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "fieldNameList": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  }
+}

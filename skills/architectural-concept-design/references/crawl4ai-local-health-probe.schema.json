@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://architecture-pre-design-skills.local/schemas/crawl4ai-local-health-probe/1.0.0",
+  "title": "Crawl4AI Local Health Probe Execution Boundary",
+  "description": "Explicitly gated, zero-webpage local probe boundary for the locked Crawl4AI runtime. The shipped CLI carries no runner and always refuses execution. A probe outcome is never a page-access, browser-usability, or canary-authorization claim. The RuntimeDiagnostic definition is a drift-checked mirror of the controlled-crawl-live-canary schema authority.",
+  "$defs": {
+    "ProbeDiagnostic": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["category", "stage"],
+          "properties": {
+            "category": {"const": "probe_process"},
+            "stage": {"const": "probe_invocation"}
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["category", "stage"],
+          "properties": {
+            "category": {"const": "probe_output"},
+            "stage": {"const": "probe_result"}
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["category", "stage"],
+          "properties": {
+            "category": {"const": "probe_runtime"},
+            "stage": {"enum": ["crawl4ai_import", "browser_configuration", "live_configuration", "crawler_session", "browser_launch", "robots_gate"]}
+          }
+        }
+      ]
+    },
+    "RuntimeDiagnostic": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["category", "stage"],
+          "properties": {
+            "category": {"const": "worker_process"},
+            "stage": {"const": "worker_invocation"}
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["category", "stage"],
+          "properties": {
+            "category": {"const": "worker_output"},
+            "stage": {"const": "worker_result"}
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["category", "stage"],
+          "properties": {
+            "category": {"const": "renderer_navigation"},
+            "stage": {"const": "page_render"}
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["category", "stage"],
+          "properties": {
+            "category": {"const": "renderer_runtime"},
+            "stage": {"enum": ["crawl4ai_import", "browser_configuration", "crawler_session", "page_render", "unclassified"]}
+          }
+        }
+      ]
+    },
+    "ProbeInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contract_version", "execution_mode", "human_confirmation", "runtime_dry_run_input"],
+      "properties": {
+        "contract_version": {"const": "1.0.0"},
+        "execution_mode": {"enum": ["local_health_probe", "local_probe", "live", "execute", "browser", "network"]},
+        "human_confirmation": {"type": ["object", "null"]},
+        "runtime_dry_run_input": {"type": "object"}
+      }
+    },
+    "ProbeResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contract_version", "ok", "outcome", "plan_id", "source_domain", "registry_version", "runtime_id", "probe_status", "attempt_count", "retry_count", "probe_diagnostic", "health_diagnostic_classification", "incompatible_parameter", "reason_codes"],
+      "properties": {
+        "contract_version": {"const": "1.0.0"},
+        "ok": {"type": "boolean"},
+        "outcome": {"enum": ["completed", "insufficiency", "blocked", "dependency_unavailable"]},
+        "plan_id": {"type": ["string", "null"], "pattern": "^CCP-[0-9]{3,}$"},
+        "source_domain": {"type": ["string", "null"], "pattern": "^[a-z0-9.-]+$"},
+        "registry_version": {"type": ["string", "null"], "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+        "runtime_id": {"type": ["string", "null"], "pattern": "^[a-z][a-z0-9-]*$"},
+        "probe_status": {"enum": ["local_probe_not_executed", "local_probe_failed_local_stage", "local_probe_completed_local_stages_only"]},
+        "attempt_count": {"type": "integer", "minimum": 0, "maximum": 1},
+        "retry_count": {"const": 0},
+        "probe_diagnostic": {"anyOf": [{"type": "null"}, {"$ref": "#/$defs/ProbeDiagnostic"}]},
+        "health_diagnostic_classification": {"anyOf": [{"type": "null"}, {"$ref": "#/$defs/RuntimeDiagnostic"}]},
+        "incompatible_parameter": {"anyOf": [{"type": "null"}, {"enum": ["only_text", "excluded_tags", "remove_forms", "check_robots_txt", "page_timeout", "wait_until", "wait_for_images", "screenshot", "pdf", "capture_mhtml", "capture_network_requests", "capture_console_messages", "process_iframes", "scan_full_page", "js_code", "js_code_before_wait", "c4a_script", "max_retries", "fallback_fetch_function"]}]},
+        "reason_codes": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "pattern": "^[A-Z0-9_]+$"}}
+      }
+    }
+  }
+}

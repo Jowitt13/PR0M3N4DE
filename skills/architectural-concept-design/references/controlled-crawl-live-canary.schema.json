@@ -1,0 +1,108 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://architecture-pre-design-skills.local/schemas/controlled-crawl-live-canary/1.0.0",
+  "title": "Controlled Single-page Live Canary",
+  "description": "A one-page human-confirmed contract for a separately reviewed live transport, never a crawler or candidate workflow.",
+  "$defs": {
+    "HumanConfirmation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["confirmed", "confirmed_by", "confirmed_at", "confirmation_reference"],
+      "properties": {
+        "confirmed": {"const": true},
+        "confirmed_by": {"type": "string", "minLength": 1, "maxLength": 120},
+        "confirmed_at": {"type": "string", "format": "date-time"},
+        "confirmation_reference": {"type": "string", "minLength": 1, "maxLength": 240}
+      }
+    },
+    "RuntimeDiagnostic": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["category", "stage"],
+          "properties": {
+            "category": {"const": "worker_process"},
+            "stage": {"const": "worker_invocation"}
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["category", "stage"],
+          "properties": {
+            "category": {"const": "worker_output"},
+            "stage": {"const": "worker_result"}
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["category", "stage"],
+          "properties": {
+            "category": {"const": "renderer_navigation"},
+            "stage": {"const": "page_render"}
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["category", "stage"],
+          "properties": {
+            "category": {"const": "renderer_runtime"},
+            "stage": {"enum": ["crawl4ai_import", "browser_configuration", "crawler_session", "page_render", "unclassified"]}
+          }
+        }
+      ]
+    },
+    "LiveCanaryInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contract_version", "execution_mode", "live_enabled", "human_confirmation", "runtime_dry_run_input"],
+      "properties": {
+        "contract_version": {"const": "1.0.0"},
+        "execution_mode": {"const": "live_canary"},
+        "live_enabled": {"const": true},
+        "human_confirmation": {"$ref": "#/$defs/HumanConfirmation"},
+        "runtime_dry_run_input": {"type": "object"}
+      }
+    },
+    "CanaryRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_locator", "accessed_at", "audit_status", "source_text_trust", "instruction_handling", "short_text", "team_authored_summary"],
+      "properties": {
+        "source_locator": {"type": "string", "format": "uri", "maxLength": 600},
+        "accessed_at": {"type": "string", "format": "date-time"},
+        "audit_status": {"const": "live_canary_unverified"},
+        "source_text_trust": {"const": "untrusted_page_content"},
+        "instruction_handling": {"const": "data_only_ignore_instructions"},
+        "short_text": {
+          "type": "object",
+          "additionalProperties": {"type": "string", "minLength": 1, "maxLength": 280},
+          "minProperties": 1,
+          "maxProperties": 5
+        },
+        "team_authored_summary": {"type": "string", "minLength": 1, "maxLength": 280}
+      }
+    },
+    "LiveCanaryResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contract_version", "ok", "outcome", "plan_id", "source_domain", "registry_version", "attempt_count", "retry_count", "reason_codes", "runtime_diagnostic", "records"],
+      "properties": {
+        "contract_version": {"const": "1.0.0"},
+        "ok": {"type": "boolean"},
+        "outcome": {"enum": ["completed", "insufficiency", "blocked", "dependency_unavailable"]},
+        "plan_id": {"type": ["string", "null"], "pattern": "^CCP-[0-9]{3,}$"},
+        "source_domain": {"type": ["string", "null"], "pattern": "^[a-z0-9.-]+$"},
+        "registry_version": {"type": ["string", "null"], "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+        "attempt_count": {"type": "integer", "minimum": 0, "maximum": 1},
+        "retry_count": {"const": 0},
+        "reason_codes": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "pattern": "^[A-Z0-9_]+$"}},
+        "runtime_diagnostic": {"anyOf": [{"type": "null"}, {"$ref": "#/$defs/RuntimeDiagnostic"}]},
+        "records": {"type": "array", "maxItems": 1, "items": {"$ref": "#/$defs/CanaryRecord"}}
+      }
+    }
+  }
+}

@@ -1,0 +1,141 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://architecture-pre-design-skills.local/schemas/external-dependency-lock/2.0.0",
+  "title": "Architecture Pre-design External Dependency Lock",
+  "description": "Reviewed sibling-Skill and isolated-runtime identities. It neither vendors nor automatically executes external source trees, packages, or browsers.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["lock_version", "generated_at", "skill_dependencies", "runtime_dependencies", "prohibited_dependency_ids"],
+  "properties": {
+    "lock_version": {"const": "2.0.0"},
+    "generated_at": {"type": "string", "format": "date"},
+    "prohibited_dependency_ids": {
+      "type": "array",
+      "minItems": 3,
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "skill_dependencies": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/SkillDependency"}
+    },
+    "runtime_dependencies": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/RuntimeDependency"}
+    }
+  },
+  "$defs": {
+    "GitSha": {"type": "string", "pattern": "^[a-f0-9]{40}$"},
+    "Sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "SafeRelativePath": {"type": "string", "pattern": "^(?!/)(?![A-Za-z]:)(?!.*(?:^|/)\\.\\.(?:/|$))[A-Za-z0-9._/-]+$"},
+    "HttpsUrl": {"type": "string", "pattern": "^https://[^/?#]+(?:/[^?#]*)?$"},
+    "DependencyId": {"type": "string", "pattern": "^[a-z][a-z0-9-]*$"},
+    "SkillDependency": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id", "optional", "repository", "commit", "tree_sha", "license_spdx", "license_file",
+        "source_skill_path", "destination_name", "expected_blobs", "runtime_environment"
+      ],
+      "properties": {
+        "id": {"$ref": "#/$defs/DependencyId"},
+        "optional": {"type": "boolean"},
+        "repository": {"type": "string", "pattern": "^https://github\\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+\\.git$"},
+        "commit": {"$ref": "#/$defs/GitSha"},
+        "tree_sha": {"$ref": "#/$defs/GitSha"},
+        "license_spdx": {"type": "string", "minLength": 1},
+        "license_file": {"$ref": "#/$defs/SafeRelativePath"},
+        "source_skill_path": {"$ref": "#/$defs/SafeRelativePath"},
+        "destination_name": {"$ref": "#/$defs/DependencyId"},
+        "runtime_environment": {"const": "skill_only_no_runtime_environment"},
+        "expected_blobs": {
+          "type": "array",
+          "minItems": 2,
+          "items": {"$ref": "#/$defs/ExpectedBlob"}
+        }
+      }
+    },
+    "ExpectedBlob": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha"],
+      "properties": {
+        "path": {"$ref": "#/$defs/SafeRelativePath"},
+        "sha": {"$ref": "#/$defs/GitSha"}
+      }
+    },
+    "RuntimeDependency": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id", "optional", "runtime_kind", "python_version", "project_definition", "project_lock",
+        "browser_lock", "browser_metadata", "distribution", "browser_engine", "installation_commands", "receipt_file",
+        "supported_platform", "prohibited_capabilities", "upstream_license"
+      ],
+      "properties": {
+        "id": {"$ref": "#/$defs/DependencyId"},
+        "optional": {"const": true},
+        "runtime_kind": {"const": "isolated_python_browser_runtime"},
+        "python_version": {"type": "string", "pattern": "^3\\.13\\.[0-9]+$"},
+        "project_definition": {"$ref": "#/$defs/SafeRelativePath"},
+        "project_lock": {"$ref": "#/$defs/SafeRelativePath"},
+        "browser_lock": {"$ref": "#/$defs/SafeRelativePath"},
+        "browser_metadata": {"$ref": "#/$defs/SafeRelativePath"},
+        "distribution": {"$ref": "#/$defs/Distribution"},
+        "browser_engine": {"$ref": "#/$defs/BrowserEngine"},
+        "installation_commands": {
+          "type": "array",
+          "minItems": 3,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "receipt_file": {"$ref": "#/$defs/SafeRelativePath"},
+        "supported_platform": {"const": "windows-x86_64"},
+        "prohibited_capabilities": {
+          "type": "array",
+          "minItems": 10,
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "upstream_license": {"$ref": "#/$defs/UpstreamLicense"}
+      }
+    },
+    "Distribution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "version", "artifact_url", "sha256"],
+      "properties": {
+        "name": {"const": "crawl4ai"},
+        "version": {"const": "0.9.2"},
+        "artifact_url": {"$ref": "#/$defs/HttpsUrl"},
+        "sha256": {"$ref": "#/$defs/Sha256"}
+      }
+    },
+    "BrowserEngine": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["provider", "package_version", "chromium_revision", "chromium_version", "browsers_json_sha256", "installed_directory"],
+      "properties": {
+        "provider": {"const": "playwright"},
+        "package_version": {"const": "1.61.0"},
+        "chromium_revision": {"const": "1228"},
+        "chromium_version": {"const": "149.0.7827.55"},
+        "browsers_json_sha256": {"$ref": "#/$defs/Sha256"},
+        "installed_directory": {"const": "chromium-1228"}
+      }
+    },
+    "UpstreamLicense": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["spdx", "license_url", "attribution_notice_required"],
+      "properties": {
+        "spdx": {"const": "Apache-2.0"},
+        "license_url": {"$ref": "#/$defs/HttpsUrl"},
+        "attribution_notice_required": {"const": true}
+      }
+    }
+  }
+}

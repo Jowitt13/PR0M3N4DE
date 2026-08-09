@@ -1,0 +1,129 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://architecture-pre-design-skills.local/schemas/input/1.0.0",
+  "title": "Architecture Pre-design Input",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "project", "sources", "evidence"],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "project": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^P-[0-9A-Za-z-]+$",
+          "description": "Project identifier with P- prefix and readable slug."
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Human-readable project name."
+        },
+        "building_type": {
+          "type": "string",
+          "description": "Classification of the building (e.g. community library)."
+        },
+        "jurisdiction": {
+          "type": "string",
+          "description": "Regulatory jurisdiction for the project."
+        },
+        "requested_deliverables": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "List of requested output deliverables."
+        }
+      }
+    },
+    "sources": {
+      "type": "array",
+      "items": {
+        "$ref": "https://architecture-pre-design-skills.local/schemas/evidence/1.0.0#/$defs/Source"
+      },
+      "description": "External sources that supply evidence. Sole authority for retrieval time and document location."
+    },
+    "evidence": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "https://architecture-pre-design-skills.local/schemas/evidence/1.0.0#/$defs/EvidenceRecord"
+      },
+      "description": "Input evidence claims. Must include at least one evidence record."
+    },
+    "program": {
+      "$ref": "https://architecture-pre-design-skills.local/schemas/area-schedule/1.0.0",
+      "description": "Space program with area values and optional grossing factor."
+    },
+    "constraints": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "description", "evidence_ids", "status"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^C-[0-9]{3,}$",
+            "description": "Stable constraint identifier."
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Constraint description."
+          },
+          "evidence_ids": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "pattern": "^E-[0-9]{3,}$"
+            },
+            "description": "Evidence IDs supporting this constraint."
+          },
+          "status": {
+            "enum": ["candidate", "confirmed", "superseded"],
+            "description": "Constraint status. Defaults to candidate; only human action promotes to confirmed."
+          }
+        }
+      },
+      "description": "Design constraints (C-xxx). All constraints must explicitly declare their status."
+    },
+    "relations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "from_space_id", "to_space_id", "priority"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^R-[0-9]{3,}$",
+            "description": "Stable relation identifier."
+          },
+          "from_space_id": {
+            "type": "string",
+            "pattern": "^S-[0-9]{3,}$",
+            "description": "Source space ID."
+          },
+          "to_space_id": {
+            "type": "string",
+            "pattern": "^S-[0-9]{3,}$",
+            "description": "Target space ID."
+          },
+          "priority": {
+            "enum": ["required", "preferred", "avoid"],
+            "description": "Adjacency priority."
+          },
+          "rationale": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Architectural reasoning for the relation."
+          }
+        }
+      },
+      "description": "Adjacency relations between spaces (R-xxx). Located at input root, not inside program."
+    }
+  }
+}

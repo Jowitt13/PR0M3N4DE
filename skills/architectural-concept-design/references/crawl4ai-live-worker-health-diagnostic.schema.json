@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://architecture-pre-design-skills.local/schemas/crawl4ai-live-worker-health-diagnostic/1.0.0",
+  "title": "Crawl4AI Live-worker Health Diagnostic",
+  "description": "Offline-only classification of one already-sanitized live-worker runtime diagnostic plus an ARCH-044 receipt/layout recheck. It never executes a probe, worker, browser, subprocess, or network request. The RuntimeDiagnostic definition is a drift-checked mirror of the controlled-crawl-live-canary schema authority.",
+  "$defs": {
+    "RuntimeDiagnostic": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["category", "stage"],
+          "properties": {
+            "category": {"const": "worker_process"},
+            "stage": {"const": "worker_invocation"}
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["category", "stage"],
+          "properties": {
+            "category": {"const": "worker_output"},
+            "stage": {"const": "worker_result"}
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["category", "stage"],
+          "properties": {
+            "category": {"const": "renderer_navigation"},
+            "stage": {"const": "page_render"}
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["category", "stage"],
+          "properties": {
+            "category": {"const": "renderer_runtime"},
+            "stage": {"enum": ["crawl4ai_import", "browser_configuration", "crawler_session", "page_render", "unclassified"]}
+          }
+        }
+      ]
+    },
+    "HealthDiagnosticInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contract_version", "execution_mode", "runtime_dry_run_input", "observed_reason_code", "observed_runtime_diagnostic"],
+      "properties": {
+        "contract_version": {"const": "1.0.0"},
+        "execution_mode": {"enum": ["local_health_diagnostic", "local_probe", "live", "execute", "browser", "network"]},
+        "runtime_dry_run_input": {"type": "object"},
+        "observed_reason_code": {"type": ["string", "null"], "pattern": "^[A-Z][A-Z0-9_]*$", "maxLength": 80},
+        "observed_runtime_diagnostic": {"type": ["object", "null"]}
+      }
+    },
+    "HealthDiagnosticResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contract_version", "ok", "outcome", "plan_id", "source_domain", "registry_version", "runtime_id", "runtime_health", "probe_status", "diagnostic_classification", "reason_codes"],
+      "properties": {
+        "contract_version": {"const": "1.0.0"},
+        "ok": {"type": "boolean"},
+        "outcome": {"enum": ["diagnosed_offline", "blocked", "dependency_unavailable"]},
+        "plan_id": {"type": ["string", "null"], "pattern": "^CCP-[0-9]{3,}$"},
+        "source_domain": {"type": ["string", "null"], "pattern": "^[a-z0-9.-]+$"},
+        "registry_version": {"type": ["string", "null"], "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+        "runtime_id": {"type": ["string", "null"], "pattern": "^[a-z][a-z0-9-]*$"},
+        "runtime_health": {"enum": ["receipt_and_local_layout_validated_dry_run_only", "not_available_or_not_validated"]},
+        "probe_status": {"const": "local_probe_not_executed"},
+        "diagnostic_classification": {"anyOf": [{"type": "null"}, {"$ref": "#/$defs/RuntimeDiagnostic"}]},
+        "reason_codes": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "pattern": "^[A-Z0-9_]+$"}}
+      }
+    }
+  }
+}

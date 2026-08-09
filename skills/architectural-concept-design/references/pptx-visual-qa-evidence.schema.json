@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "pptx-visual-qa-evidence/v1",
+  "title": "PPTX Visual QA Evidence",
+  "description": "Evidence contract for PPTX visual QA validation. This contract records rendering provenance, hash binding, page count, and per-slide assertions. It does not prove visual aesthetics, text semantics, design correctness, manual review, regulatory compliance, or constructibility.",
+  "type": "object",
+  "required": ["contract", "final_sha256", "slide_count", "renderer", "output_format", "slides"],
+  "properties": {
+    "contract": {
+      "type": "string",
+      "const": "pptx-visual-qa-evidence/v1",
+      "description": "Contract version identifier"
+    },
+    "final_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "SHA-256 of the candidate PPTX file (lowercase hex)"
+    },
+    "slide_count": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Total number of slides in the PPTX"
+    },
+    "renderer": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Renderer identifier (e.g., 'synthetic-test-renderer', 'powerpoint-com')"
+    },
+    "output_format": {
+      "type": "string",
+      "const": "png",
+      "description": "Output image format (must be 'png')"
+    },
+    "slides": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "slide_index",
+          "image_path",
+          "image_sha256",
+          "width_px",
+          "height_px",
+          "geometry_overflow_count",
+          "negative_coordinate_count",
+          "sources_note_present",
+          "renderer_status"
+        ],
+        "properties": {
+          "slide_index": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "1-based slide index (must be unique and continuous)"
+          },
+          "image_path": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Path to the rendered PNG image"
+          },
+          "image_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$",
+            "description": "SHA-256 of the rendered PNG (lowercase hex)"
+          },
+          "width_px": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Image width in pixels"
+          },
+          "height_px": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Image height in pixels"
+          },
+          "geometry_overflow_count": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Number of geometry overflow events (must be 0 for PASS)"
+          },
+          "negative_coordinate_count": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Number of negative coordinate events (must be 0 for PASS)"
+          },
+          "sources_note_present": {
+            "type": "boolean",
+            "description": "Whether sources note is present (must be true for PASS)"
+          },
+          "renderer_status": {
+            "type": "string",
+            "description": "Renderer status (must be 'PASS' for validation)"
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

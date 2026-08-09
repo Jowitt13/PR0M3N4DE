@@ -1,0 +1,133 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://architecture-pre-design-skills.local/schemas/state-only-presentation-handoff/1.0.0",
+  "title": "State-only Architecture Presentation Handoff",
+  "description": "A real-project, local-state presentation handoff with no external precedent or third-party media transfer.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract_version",
+    "mode",
+    "handoff_id",
+    "project_id",
+    "project_display_name",
+    "state_package",
+    "human_design_decision",
+    "architectural_chain",
+    "deck_framework",
+    "local_assets",
+    "rendering_boundary"
+  ],
+  "properties": {
+    "contract_version": {"const": "1.0.0"},
+    "mode": {"const": "STATE_ONLY_TEAM_ORIGINAL"},
+    "handoff_id": {"type": "string", "pattern": "^SOH-[0-9]{3,}$"},
+    "project_id": {"type": "string", "pattern": "^P-[A-Za-z0-9][A-Za-z0-9-]*$"},
+    "project_display_name": {"type": "string", "minLength": 1},
+    "state_package": {"$ref": "#/$defs/StatePackageReference"},
+    "human_design_decision": {"$ref": "#/$defs/HumanDesignDecision"},
+    "architectural_chain": {"$ref": "#/$defs/ArchitecturalChain"},
+    "deck_framework": {
+      "type": "array",
+      "minItems": 10,
+      "maxItems": 10,
+      "items": {"$ref": "#/$defs/DeckPage"}
+    },
+    "local_assets": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/LocalAsset"}
+    },
+    "rendering_boundary": {"$ref": "#/$defs/RenderingBoundary"}
+  },
+  "$defs": {
+    "Sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "StatePackageReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["input_hash", "output_hash", "validated_at"],
+      "properties": {
+        "input_hash": {"$ref": "#/$defs/Sha256"},
+        "output_hash": {"$ref": "#/$defs/Sha256"},
+        "validated_at": {"type": "string", "format": "date-time"}
+      }
+    },
+    "HumanDesignDecision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["decision_id", "decision_type", "chosen_option_id", "criteria_ids", "decided_by", "recorded_in_validated_state"],
+      "properties": {
+        "decision_id": {"type": "string", "pattern": "^D-[0-9]{3,}$"},
+        "decision_type": {"const": "select"},
+        "chosen_option_id": {"type": "string", "pattern": "^O-[0-9]{3,}$"},
+        "criteria_ids": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"type": "string", "pattern": "^K-[0-9]{3,}$"}
+        },
+        "decided_by": {"type": "string", "minLength": 1},
+        "recorded_in_validated_state": {"const": true}
+      }
+    },
+    "ArchitecturalChain": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["evidence_ids", "constraint_ids", "space_ids", "relation_ids", "hypothesis_ids", "option_ids", "criterion_ids", "decision_ids", "deliverable_ids"],
+      "properties": {
+        "evidence_ids": {"$ref": "#/$defs/IdList"},
+        "constraint_ids": {"$ref": "#/$defs/IdList"},
+        "space_ids": {"$ref": "#/$defs/IdList"},
+        "relation_ids": {"$ref": "#/$defs/IdList"},
+        "hypothesis_ids": {"$ref": "#/$defs/IdList"},
+        "option_ids": {"$ref": "#/$defs/IdList"},
+        "criterion_ids": {"$ref": "#/$defs/IdList"},
+        "decision_ids": {"$ref": "#/$defs/IdList"},
+        "deliverable_ids": {"$ref": "#/$defs/IdList"}
+      }
+    },
+    "IdList": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string", "pattern": "^[A-Z]-[0-9]{3,}$"}
+    },
+    "DeckPage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["page_id", "title", "purpose", "required_state_ids", "visible_state_only_notice", "visual_strategy", "speaker_note"],
+      "properties": {
+        "page_id": {"type": "string", "pattern": "^SOP-(0[1-9]|10)$"},
+        "title": {"type": "string", "minLength": 1},
+        "purpose": {"type": "string", "minLength": 1},
+        "required_state_ids": {"$ref": "#/$defs/IdList"},
+        "visible_state_only_notice": {"const": "STATE-ONLY HANDOFF — NO EXTERNAL PRECEDENT OR THIRD-PARTY MEDIA"},
+        "visual_strategy": {"const": "team_original_diagram_only"},
+        "speaker_note": {"type": "string", "minLength": 1}
+      }
+    },
+    "LocalAsset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["asset_id", "state_deliverable_id", "kind", "relative_path", "sha256"],
+      "properties": {
+        "asset_id": {"type": "string", "pattern": "^VA-[0-9]{3,}$"},
+        "state_deliverable_id": {"type": "string", "pattern": "^A-[0-9]{3,}$"},
+        "kind": {"const": "team_original_diagram"},
+        "relative_path": {"type": "string", "pattern": "^(?!/)(?!.*\\\\)(?!.*(^|/)\\.\\.?(/|$)).+"},
+        "sha256": {"$ref": "#/$defs/Sha256"}
+      }
+    },
+    "RenderingBoundary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["renderer_name", "renderer_invoked", "network_accessed", "external_precedent_transferred", "third_party_media_packaged", "pptx_generated"],
+      "properties": {
+        "renderer_name": {"const": "ppt-master"},
+        "renderer_invoked": {"const": false},
+        "network_accessed": {"const": false},
+        "external_precedent_transferred": {"const": false},
+        "third_party_media_packaged": {"const": false},
+        "pptx_generated": {"const": false}
+      }
+    }
+  }
+}

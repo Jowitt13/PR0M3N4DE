@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://architecture-pre-design-skills.local/schemas/controlled-crawl-replay/1.0.0",
+  "title": "Offline Controlled Crawl Replay",
+  "description": "Offline-only record/replay contract for validating a bounded controlled-crawl plan. It is not a network request, browser configuration, candidate set, evidence record, or media manifest.",
+  "$defs": {
+    "ReplayInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contract_version", "replay_id", "execution_mode", "runtime_state", "accessed_at", "events"],
+      "properties": {
+        "contract_version": {"const": "1.0.0"},
+        "replay_id": {"type": "string", "pattern": "^RRP-[0-9]{3,}$"},
+        "execution_mode": {"enum": ["offline_replay", "live_request"]},
+        "runtime_state": {"enum": ["receipt_lock_match", "unavailable", "receipt_lock_mismatch"]},
+        "accessed_at": {"type": "string", "format": "date-time"},
+        "events": {"type": "array", "minItems": 1, "maxItems": 16, "items": {"$ref": "#/$defs/ReplayEvent"}}
+      }
+    },
+    "ReplayEvent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["event_id", "event_type"],
+      "properties": {
+        "event_id": {"type": "string", "pattern": "^RRE-[0-9]{3,}$"},
+        "event_type": {"enum": ["response", "denial", "redirect", "malformed"]},
+        "page_id": {"type": "string", "pattern": "^CRP-[0-9]{3,}$"},
+        "observed_url": {"type": "string", "format": "uri", "maxLength": 600},
+        "http_status": {"type": "integer", "minimum": 100, "maximum": 599},
+        "denial_reason": {"enum": ["robots_denied", "login", "paywall", "captcha", "cloudflare_challenge", "explicit_refusal"]},
+        "redirect_target": {"type": "string", "format": "uri", "maxLength": 600},
+        "extracted_text": {
+          "type": "object",
+          "additionalProperties": {"type": "string", "minLength": 1, "maxLength": 280},
+          "minProperties": 1,
+          "maxProperties": 5
+        },
+        "team_authored_summary": {"type": "string", "minLength": 1, "maxLength": 280},
+        "untrusted_page_text": {"type": "string", "maxLength": 1200}
+      }
+    },
+    "ExecutionRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_locator", "accessed_at", "audit_status", "source_text_trust", "instruction_handling", "short_text", "team_authored_summary"],
+      "properties": {
+        "source_locator": {"type": "string", "format": "uri", "maxLength": 600},
+        "accessed_at": {"type": "string", "format": "date-time"},
+        "audit_status": {"const": "offline_replay_unverified"},
+        "source_text_trust": {"const": "untrusted_page_content"},
+        "instruction_handling": {"const": "data_only_ignore_instructions"},
+        "short_text": {
+          "type": "object",
+          "additionalProperties": {"type": "string", "minLength": 1, "maxLength": 280},
+          "minProperties": 1,
+          "maxProperties": 5
+        },
+        "team_authored_summary": {"type": "string", "minLength": 1, "maxLength": 280}
+      }
+    },
+    "ExecutionResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contract_version", "ok", "outcome", "plan_id", "source_domain", "registry_version", "processed_page_count", "attempt_count", "retry_count", "reason_codes", "records"],
+      "properties": {
+        "contract_version": {"const": "1.0.0"},
+        "ok": {"type": "boolean"},
+        "outcome": {"enum": ["completed", "insufficiency", "blocked", "dependency_unavailable"]},
+        "plan_id": {"type": ["string", "null"], "pattern": "^CCP-[0-9]{3,}$"},
+        "source_domain": {"type": ["string", "null"], "pattern": "^[a-z0-9.-]+$"},
+        "registry_version": {"type": ["string", "null"], "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+        "processed_page_count": {"type": "integer", "minimum": 0},
+        "attempt_count": {"type": "integer", "minimum": 0},
+        "retry_count": {"const": 0},
+        "reason_codes": {"type": "array", "items": {"type": "string", "pattern": "^[A-Z0-9_]+$"}, "uniqueItems": true},
+        "records": {"type": "array", "items": {"$ref": "#/$defs/ExecutionRecord"}}
+      }
+    }
+  }
+}

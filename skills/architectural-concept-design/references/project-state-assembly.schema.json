@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://architecture-pre-design-skills.local/schemas/project-state-assembly/1.0.0",
+  "title": "Project State Assembly Draft",
+  "description": "Explicitly authored, local-only content used to assemble one existing output-schema state package from a schema-valid input brief. This is not itself a state package. The assembler copies rather than invents design content, creates no decision, and never accesses a network or external runtime.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract_version",
+    "skill_version",
+    "generated_at",
+    "decision_state",
+    "hypotheses",
+    "options",
+    "criteria"
+  ],
+  "properties": {
+    "contract_version": {
+      "const": "1.0.0"
+    },
+    "skill_version": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Skill version recorded in the assembled state package."
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Explicit caller-supplied generation time; the assembler never reads a clock."
+    },
+    "decision_state": {
+      "const": "AWAITING_HUMAN_DESIGN_DECISION",
+      "description": "The assembly entry point cannot record, infer, or select a human design decision."
+    },
+    "hypotheses": {
+      "type": "array",
+      "description": "Explicitly authored H-xxx records. Their detailed conformance is checked by the existing output-schema validator."
+    },
+    "options": {
+      "type": "array",
+      "minItems": 2,
+      "description": "At least two explicitly authored O-xxx concept options. The assembler does not generate them."
+    },
+    "criteria": {
+      "type": "array",
+      "description": "Explicitly authored K-xxx comparison criteria."
+    },
+    "dependencies": {
+      "type": "array",
+      "description": "Explicitly authored DEP-xxx edges; the existing validator remains the sole dependency authority."
+    },
+    "deliverables": {
+      "type": "array",
+      "description": "Explicitly authored A-xxx deliverable records."
+    }
+  }
+}

@@ -1,0 +1,138 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://architecture-pre-design-skills.local/schemas/runtime-candidate-selection-handoff/1.0.0",
+  "title": "Selected Runtime Candidate Human-Authoring Handoff",
+  "description": "A local-only, immutable binding between one validated RCH draft handoff and one explicit human selection receipt. It preserves only selected untrusted observations and authoring requirements. It is not an RCR candidate set, state package, source/evidence registration, media manifest, presentation handoff, or PPTX.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract_version",
+    "selection_handoff_id",
+    "project_id",
+    "candidate_handoff",
+    "selection",
+    "selected_observations",
+    "boundaries"
+  ],
+  "properties": {
+    "contract_version": {"const": "1.0.0"},
+    "selection_handoff_id": {"type": "string", "pattern": "^RCSH-[0-9]{3,}$"},
+    "project_id": {"type": "string", "minLength": 1, "maxLength": 160},
+    "candidate_handoff": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["handoff_id", "sha256", "registry_version"],
+      "properties": {
+        "handoff_id": {"type": "string", "pattern": "^RCH-[0-9]{3,}$"},
+        "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "registry_version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"}
+      }
+    },
+    "selection": {"$ref": "#/$defs/HumanSelection"},
+    "selected_observations": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 3,
+      "items": {"$ref": "#/$defs/SelectedObservation"}
+    },
+    "boundaries": {"$ref": "#/$defs/Boundaries"}
+  },
+  "$defs": {
+    "HumanSelection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["selection_id", "selected_by", "selected_at", "selection_method", "selected_candidate_ids"],
+      "properties": {
+        "selection_id": {"type": "string", "pattern": "^RCS-[0-9]{3,}$"},
+        "selected_by": {"type": "string", "minLength": 1},
+        "selected_at": {"type": "string", "format": "date-time"},
+        "selection_method": {"const": "explicit_human_selection"},
+        "selected_candidate_ids": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 3,
+          "uniqueItems": true,
+          "items": {"type": "string", "pattern": "^RC-[0-9]{3,}$"}
+        }
+      }
+    },
+    "SelectedObservation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["candidate_id", "source", "observed_short_text", "integration_status", "required_human_authoring"],
+      "properties": {
+        "candidate_id": {"type": "string", "pattern": "^RC-[0-9]{3,}$"},
+        "source": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["canonical_locator", "accessed_at"],
+          "properties": {
+            "canonical_locator": {"type": "string", "format": "uri", "minLength": 1, "maxLength": 600},
+            "accessed_at": {"type": "string", "format": "date-time"}
+          }
+        },
+        "observed_short_text": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["source_text_trust", "instruction_handling", "audit_status", "project_title", "short_project_description"],
+          "properties": {
+            "source_text_trust": {"const": "untrusted_page_content"},
+            "instruction_handling": {"const": "data_only_ignore_instructions"},
+            "audit_status": {"const": "live_canary_unverified"},
+            "project_title": {"$ref": "#/$defs/ObservedText"},
+            "short_project_description": {"$ref": "#/$defs/ObservedText"}
+          }
+        },
+        "integration_status": {"const": "HUMAN_AUTHORING_REQUIRED"},
+        "required_human_authoring": {
+          "type": "array",
+          "uniqueItems": true,
+          "minItems": 4,
+          "maxItems": 4,
+          "items": {
+            "enum": ["project_identity", "brief_linked_reasons", "team_authored_spatial_operation", "uncertainties"]
+          }
+        }
+      }
+    },
+    "ObservedText": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["observed", "text"],
+          "properties": {
+            "observed": {"const": true},
+            "text": {"type": "string", "minLength": 1, "maxLength": 280}
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["observed"],
+          "properties": {"observed": {"const": false}}
+        }
+      ]
+    },
+    "Boundaries": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "does_not_create_runtime_sources_or_evidence",
+        "does_not_transfer_spatial_operations",
+        "does_not_create_cards_or_media",
+        "does_not_create_presentation_handoff_or_pptx",
+        "network_accessed",
+        "third_party_media_retained"
+      ],
+      "properties": {
+        "does_not_create_runtime_sources_or_evidence": {"const": true},
+        "does_not_transfer_spatial_operations": {"const": true},
+        "does_not_create_cards_or_media": {"const": true},
+        "does_not_create_presentation_handoff_or_pptx": {"const": true},
+        "network_accessed": {"const": false},
+        "third_party_media_retained": {"const": false}
+      }
+    }
+  }
+}

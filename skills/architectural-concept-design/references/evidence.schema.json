@@ -1,0 +1,242 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://architecture-pre-design-skills.local/schemas/evidence/1.0.0",
+  "title": "Evidence Record",
+  "description": "Shared Source and Evidence Record definitions. Referenced by input.schema.json and output.schema.json via $ref.",
+  "$defs": {
+    "Stale": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["reason", "trigger_id", "trigger_change_event", "occurred_at"],
+      "properties": {
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Why this object must be reconsidered."
+        },
+        "trigger_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Stable ID of the changed upstream object."
+        },
+        "trigger_change_event": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Externally supplied event identifier for the change."
+        },
+        "occurred_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Externally supplied RFC 3339 time of the triggering change."
+        }
+      }
+    },
+    "Source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "locator", "retrieved_at"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^SRC-[0-9]{3,}$",
+          "description": "Stable source identifier."
+        },
+        "locator": {
+          "type": "string",
+          "minLength": 1,
+          "description": "URI, file path, or document reference."
+        },
+        "retrieved_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 timestamp when the source was accessed."
+        },
+        "stale": {
+          "$ref": "#/$defs/Stale"
+        }
+      }
+    },
+    "EvidenceRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "label", "claim"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^E-[0-9]{3,}$",
+          "description": "Stable evidence identifier."
+        },
+        "stale": {
+          "$ref": "#/$defs/Stale"
+        },
+        "label": {
+          "enum": ["PROVIDED", "VERIFIED", "INFERRED", "ASSUMED", "PROPOSED"],
+          "description": "Evidence classification label."
+        },
+        "claim": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The factual claim, observation, or statement."
+        },
+        "claim_type": {
+          "type": "string",
+          "description": "Domain category for the claim (e.g. regulatory, site_observation, programmatic)."
+        },
+        "source_id": {
+          "type": "string",
+          "pattern": "^SRC-[0-9]{3,}$",
+          "description": "Reference to a Source.id (SRC-xxx). Required for PROVIDED and VERIFIED labels."
+        },
+        "verification_status": {
+          "enum": ["confirmed", "pending", "superseded"],
+          "description": "Required for VERIFIED evidence."
+        },
+        "verified_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 timestamp of verification. Required for VERIFIED evidence."
+        },
+        "jurisdiction": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Regulatory jurisdiction. Required when claim_type is regulatory."
+        },
+        "edition": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Regulation edition or version. Required when claim_type is regulatory."
+        },
+        "clause": {
+          "type": ["string", "null"],
+          "not": {"const": "N/A"},
+          "description": "Regulation clause reference. Required when claim_type is regulatory. Must be null (with clause_not_applicable_reason) when no applicable clause exists. The string 'N/A' is not accepted."
+        },
+        "clause_not_applicable_reason": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Required when clause is null. Explains why no specific clause applies."
+        },
+        "inference_basis": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "pattern": "^E-[0-9]{3,}$"},
+          "description": "Evidence IDs from which this claim is inferred. Required for INFERRED evidence."
+        },
+        "inference_rule": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Logical rule used for inference. Required for INFERRED evidence."
+        },
+        "missing_information": {
+          "type": "string",
+          "minLength": 1,
+          "description": "What information is missing. Required for ASSUMED evidence."
+        },
+        "impact": {
+          "type": "string",
+          "minLength": 1,
+          "description": "How the missing information affects the design. Required for ASSUMED evidence."
+        },
+        "owner": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Person or role responsible for resolving the assumption. Required for ASSUMED evidence."
+        },
+        "validation_action": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Next step to validate or resolve the assumption. Required for ASSUMED evidence."
+        },
+        "proposal_rationale": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Architectural reasoning behind the proposal. Required for PROPOSED evidence."
+        },
+        "basis_evidence_ids": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "pattern": "^E-[0-9]{3,}$"},
+          "description": "Evidence IDs supporting the proposal. Required for PROPOSED when based on evidence."
+        },
+        "basis_absent_reason": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Reason why no prior evidence exists. Required for PROPOSED when no evidence basis."
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {"label": {"const": "PROVIDED"}},
+            "required": ["label"]
+          },
+          "then": {
+            "required": ["source_id"]
+          }
+        },
+        {
+          "if": {
+            "properties": {"label": {"const": "VERIFIED"}},
+            "required": ["label"]
+          },
+          "then": {
+            "required": ["source_id", "claim_type", "verification_status", "verified_at"],
+            "allOf": [
+              {
+                "if": {
+                  "properties": {"claim_type": {"const": "regulatory"}},
+                  "required": ["claim_type"]
+                },
+                "then": {
+                  "required": ["jurisdiction", "edition", "clause"],
+                  "allOf": [
+                    {
+                      "if": {
+                        "properties": {"clause": {"const": null}},
+                        "required": ["clause"]
+                      },
+                      "then": {
+                        "required": ["clause_not_applicable_reason"]
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {"label": {"const": "INFERRED"}},
+            "required": ["label"]
+          },
+          "then": {
+            "required": ["inference_basis", "inference_rule"]
+          }
+        },
+        {
+          "if": {
+            "properties": {"label": {"const": "ASSUMED"}},
+            "required": ["label"]
+          },
+          "then": {
+            "required": ["missing_information", "impact", "owner", "validation_action"]
+          }
+        },
+        {
+          "if": {
+            "properties": {"label": {"const": "PROPOSED"}},
+            "required": ["label"]
+          },
+          "then": {
+            "required": ["proposal_rationale"],
+            "oneOf": [
+              {"required": ["basis_evidence_ids"]},
+              {"required": ["basis_absent_reason"]}
+            ]
+          }
+        }
+      ]
+    }
+  }
+}
