@@ -201,7 +201,7 @@ skills/architectural-concept-design/
 ├── references/              # 契约、Schema 与建筑学指导
 ├── scripts/                 # 确定性的本地操作
 ├── assets/                  # 可打包的本地资产
-├── pyproject.toml           # 锁定版本的 Python 运行时元数据（0.1.0）
+├── pyproject.toml           # 锁定版本的 Python 运行时元数据（0.2.0）
 └── uv.lock                  # 锁定的运行时依赖
 ```
 
@@ -211,7 +211,7 @@ skills/architectural-concept-design/
 
 在源码开发中，一项变更在视为完成之前，开发工作流要求通过严格预检、仓库检查、治理测试与相关 Skill 评测，保持 diff 干净，并附上适用的评审／发布证据。仅供开发使用的治理文档与测试源文件刻意不包含在本公开发行版中；保留下来的发布安装边界，记录在 [`skills/architectural-concept-design/references/release-installation.md`](skills/architectural-concept-design/references/release-installation.md) 中。
 
-当前仓库的包元数据版本为 `0.1.0`。归档的创建、验证与纯净安装都是确定性的本地操作；每个发布归档都会记录自己的源提交、构建时间、清单与逐文件哈希。详见 [`release_skill_package.py`](skills/architectural-concept-design/scripts/release_skill_package.py)。
+当前仓库的包元数据版本为 `0.2.0`。归档的创建、验证与纯净安装都是确定性的本地操作；每个发布归档都会记录自己的源提交、构建时间、清单与逐文件哈希。详见 [`release_skill_package.py`](skills/architectural-concept-design/scripts/release_skill_package.py)。
 
 ## 公开发行意图
 
