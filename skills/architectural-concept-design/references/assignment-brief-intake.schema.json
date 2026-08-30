@@ -1,0 +1,266 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://architecture-pre-design-skills.local/schemas/assignment-brief-intake/1.0.0",
+  "title": "Assignment Brief Intake",
+  "description": "Structured, human or reader-agent authored intake for the assignment brief digest gate. It carries a file inventory, pre-extracted text segments with source locators, readability status, and human-declared conflicts and unknowns. It never carries binary files, and the digest builder parses no document format.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "intake_kind", "project_title", "input_files"],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "intake_kind": {"const": "assignment_brief_intake"},
+    "project_title": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Project title exactly as stated in the assignment material."
+    },
+    "input_files": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path_label", "file_type", "readability"],
+        "properties": {
+          "path_label": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Stable label identifying one supplied file. A label only, not a filesystem path claim."
+          },
+          "file_type": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Declared file type. A human declaration only, not proof of extraction support."
+          },
+          "readability": {
+            "enum": ["readable", "partial", "unreadable"],
+            "description": "Human-classified readability of the file content."
+          },
+          "unreadable_reason": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Required when readability is unreadable; forbidden otherwise."
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {"readability": {"const": "unreadable"}},
+              "required": ["readability"]
+            },
+            "then": {"required": ["unreadable_reason"]},
+            "else": {"not": {"required": ["unreadable_reason"]}}
+          }
+        ]
+      }
+    },
+    "extracted_segments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["segment_id", "source_file", "source_locator", "kind", "text"],
+        "properties": {
+          "segment_id": {
+            "type": "string",
+            "pattern": "^SEG-[0-9]{3,}$",
+            "description": "Stable identifier for one extracted segment."
+          },
+          "source_file": {
+            "type": "string",
+            "minLength": 1,
+            "description": "path_label of the input file this segment was extracted from."
+          },
+          "source_locator": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Human-readable locator inside the source file, such as a page, heading, table row, or caption reference."
+          },
+          "kind": {
+            "enum": ["text", "table", "heading", "caption", "drawing_requirement"],
+            "description": "Structural kind of the extracted segment."
+          },
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Literal extracted text. Extraction is authored by the human or reader agent, not by this Skill."
+          }
+        }
+      }
+    },
+    "declared_conflicts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["conflict_id", "description", "segment_ids"],
+        "properties": {
+          "conflict_id": {
+            "type": "string",
+            "pattern": "^CONF-[0-9]{3,}$",
+            "description": "Stable identifier for one declared conflict."
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "description": "What conflicts with what, stated literally without picking a winner."
+          },
+          "segment_ids": {
+            "type": "array",
+            "minItems": 2,
+            "uniqueItems": true,
+            "items": {"type": "string", "pattern": "^SEG-[0-9]{3,}$"},
+            "description": "The two or more segments that disagree."
+          }
+        }
+      }
+    },
+    "declared_unknowns": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["unknown_id", "expected_category", "kind", "description"],
+        "properties": {
+          "unknown_id": {
+            "type": "string",
+            "pattern": "^UNK-[0-9]{3,}$",
+            "description": "Stable identifier for one declared unknown."
+          },
+          "expected_category": {
+            "$ref": "#/$defs/requirement_category",
+            "description": "The requirement category the missing information belongs to."
+          },
+          "kind": {
+            "enum": ["missing", "unreadable"],
+            "description": "missing means no source supplies the information; unreadable means only an unreadable file could supply it."
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "description": "What is absent and where it was expected. Absence is declared, never inferred into a value."
+          }
+        }
+      }
+    },
+    "requirement_candidates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["candidate_id", "category", "concise_text", "status", "source_segment_ids"],
+        "properties": {
+          "candidate_id": {
+            "type": "string",
+            "pattern": "^CAND-[0-9]{3,}$",
+            "description": "Stable identifier for one requirement candidate."
+          },
+          "category": {"$ref": "#/$defs/requirement_category"},
+          "concise_text": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Concise literal paraphrase of what the brief says. No design interpretation."
+          },
+          "status": {
+            "enum": ["included", "duplicate_merged", "conflict", "deferred_with_reason"],
+            "description": "Coverage status of this candidate. missing and unreadable statuses are derived from declared unknowns, never from candidates."
+          },
+          "source_segment_ids": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {"type": "string", "pattern": "^SEG-[0-9]{3,}$"},
+            "description": "Every segment that supports this candidate."
+          },
+          "merged_from_segment_ids": {
+            "type": "array",
+            "minItems": 2,
+            "uniqueItems": true,
+            "items": {"type": "string", "pattern": "^SEG-[0-9]{3,}$"},
+            "description": "Required for duplicate_merged; all duplicate locations, including the primary one."
+          },
+          "conflict_ids": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {"type": "string", "pattern": "^CONF-[0-9]{3,}$"},
+            "description": "Required for conflict; the declared conflicts this candidate belongs to."
+          },
+          "deferred_reason": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Required for deferred_with_reason; why the item is not relevant to the current stage."
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {"status": {"const": "duplicate_merged"}},
+              "required": ["status"]
+            },
+            "then": {"required": ["merged_from_segment_ids"]},
+            "else": {"not": {"required": ["merged_from_segment_ids"]}}
+          },
+          {
+            "if": {
+              "properties": {"status": {"const": "conflict"}},
+              "required": ["status"]
+            },
+            "then": {"required": ["conflict_ids"]},
+            "else": {"not": {"required": ["conflict_ids"]}}
+          },
+          {
+            "if": {
+              "properties": {"status": {"const": "deferred_with_reason"}},
+              "required": ["status"]
+            },
+            "then": {"required": ["deferred_reason"]},
+            "else": {"not": {"required": ["deferred_reason"]}}
+          }
+        ]
+      }
+    },
+    "clarification_questions": {
+      "type": "array",
+      "maxItems": 3,
+      "items": {"type": "string", "minLength": 1},
+      "description": "At most three focused clarification questions for the human, authored by the reading agent."
+    },
+    "human_notes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["note_id", "text"],
+        "properties": {
+          "note_id": {
+            "type": "string",
+            "pattern": "^NOTE-[0-9]{3,}$",
+            "description": "Stable identifier for one human note."
+          },
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "description": "A human-stated remark or assumption. Carried verbatim; never promoted to a brief requirement."
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "requirement_category": {
+      "enum": [
+        "hard_constraint",
+        "program",
+        "site",
+        "spatial_relationship",
+        "circulation",
+        "deliverable",
+        "design_goal",
+        "scoring_focus",
+        "reference_only"
+      ],
+      "description": "Literal requirement category from the student workflow machine contract."
+    }
+  }
+}

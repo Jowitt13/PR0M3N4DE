@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://architecture-pre-design-skills.local/schemas/student-dimension-plan-draft/1.0.0",
+  "title": "Student Dimension Plan Draft",
+  "description": "A human-authored dimension candidate draft for the student workflow. It carries only long-side by short-side rectangles that the human explicitly wrote for confirmed numeric spaces, plus human deferrals with reasons. The builder checks the candidates arithmetically; it never invents, corrects, reorients, adds, orders, or chooses a candidate.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "draft_kind",
+    "source_program_sha256",
+    "candidate_sets",
+    "deferred_numeric_spaces",
+    "clarification_questions",
+    "human_confirmation"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "draft_kind": {"const": "student_dimension_plan_draft"},
+    "source_program_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "The canonical JSON plus newline SHA-256 of the confirmed student spatial program this draft answers."
+    },
+    "candidate_sets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["space_name", "candidate_count_reason", "candidates"],
+        "properties": {
+          "space_name": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The unique name of one confirmed spatial program space whose area value is known."
+          },
+          "candidate_count_reason": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Human-authored explanation of why this space carries two, three, four, five, or six candidates."
+          },
+          "candidates": {
+            "type": "array",
+            "minItems": 2,
+            "maxItems": 6,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["option_key", "long_side_m", "short_side_m"],
+              "properties": {
+                "option_key": {"enum": ["A", "B", "C", "D", "E", "F"]},
+                "long_side_m": {
+                  "type": "string",
+                  "pattern": "^[0-9]+(\\.[0-9]{1,2})?$",
+                  "description": "Exact decimal string, at most two decimal places; must be at least short_side_m and greater than zero."
+                },
+                "short_side_m": {
+                  "type": "string",
+                  "pattern": "^[0-9]+(\\.[0-9]{1,2})?$",
+                  "description": "Exact decimal string, at most two decimal places; must be greater than zero."
+                },
+                "human_note": {"type": "string", "minLength": 1}
+              }
+            }
+          }
+        }
+      }
+    },
+    "deferred_numeric_spaces": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["space_name", "reason"],
+        "properties": {
+          "space_name": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The unique name of one confirmed spatial program space whose area value is known."
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Human-authored reason for deferring dimension candidates for this space."
+          }
+        }
+      }
+    },
+    "clarification_questions": {
+      "type": "array",
+      "maxItems": 3,
+      "items": {"type": "string", "minLength": 1},
+      "description": "At most three human-authored questions; the builder never adds questions."
+    },
+    "human_confirmation": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status"],
+          "properties": {"status": {"const": "pending"}}
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status", "confirmed_by", "confirmed_at", "action", "pending_dimension_draft_sha256"],
+          "properties": {
+            "status": {"const": "confirmed"},
+            "confirmed_by": {"type": "string", "minLength": 1},
+            "confirmed_at": {"type": "string"},
+            "action": {"const": "CONFIRM_STUDENT_DIMENSION_PLAN_DRAFT"},
+            "pending_dimension_draft_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+          }
+        }
+      ]
+    }
+  }
+}

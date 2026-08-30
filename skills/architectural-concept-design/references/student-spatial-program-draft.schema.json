@@ -1,0 +1,177 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://architecture-pre-design-skills.local/schemas/student-spatial-program-draft/1.0.0",
+  "title": "Student Spatial Program Draft",
+  "description": "A human-authored spatial program draft for the student workflow. It carries only what the human explicitly wrote: functional spaces, area statements, zones, activity profiles, and adjacency or separation relations. The builder never invents spaces, areas, relations, or design content.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "draft_kind", "spaces", "relations", "unresolved_program_input", "clarification_questions", "human_confirmation"],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "draft_kind": {"const": "student_spatial_program_draft"},
+    "spaces": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["space_id", "name", "functional_zone", "activity_profile", "origin", "area"],
+        "properties": {
+          "space_id": {"type": "string", "pattern": "^S-[0-9]{3,}$"},
+          "name": {"type": "string", "minLength": 1},
+          "functional_zone": {"enum": ["public", "internal_staff", "service_support", "shared", "unresolved"]},
+          "activity_profile": {"enum": ["active", "quiet", "mixed", "unresolved"]},
+          "origin": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["kind"],
+            "properties": {
+              "kind": {"enum": ["brief_stated", "human_working"]},
+              "locator": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Required for brief_stated; a human-readable locator present in the confirmed start board."
+              },
+              "reason": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Required for human_working; the human's own stated reason."
+              }
+            },
+            "allOf": [
+              {
+                "if": {"properties": {"kind": {"const": "brief_stated"}}, "required": ["kind"]},
+                "then": {"required": ["locator"], "not": {"required": ["reason"]}},
+                "else": {"required": ["reason"], "not": {"required": ["locator"]}}
+              }
+            ]
+          },
+          "area": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["kind"],
+            "properties": {
+              "kind": {"enum": ["brief_stated", "human_working", "unresolved"]},
+              "value_m2": {
+                "type": "number",
+                "exclusiveMinimum": 0,
+                "description": "Required for brief_stated and human_working; forbidden for unresolved."
+              },
+              "locator": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Required for brief_stated; a confirmed program locator from the start board."
+              },
+              "working_note": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Required for human_working; the human working basis for this figure."
+              },
+              "unresolved_note": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Required for unresolved; states exactly what is missing."
+              }
+            },
+            "allOf": [
+              {
+                "if": {"properties": {"kind": {"const": "brief_stated"}}, "required": ["kind"]},
+                "then": {
+                  "required": ["value_m2", "locator"],
+                  "not": {"anyOf": [{"required": ["working_note"]}, {"required": ["unresolved_note"]}]}
+                }
+              },
+              {
+                "if": {"properties": {"kind": {"const": "human_working"}}, "required": ["kind"]},
+                "then": {
+                  "required": ["value_m2", "working_note"],
+                  "not": {"anyOf": [{"required": ["locator"]}, {"required": ["unresolved_note"]}]}
+                }
+              },
+              {
+                "if": {"properties": {"kind": {"const": "unresolved"}}, "required": ["kind"]},
+                "then": {
+                  "required": ["unresolved_note"],
+                  "not": {"anyOf": [{"required": ["value_m2"]}, {"required": ["locator"]}, {"required": ["working_note"]}]}
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    "relations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["relation_id", "from_space_id", "to_space_id", "kind", "basis"],
+        "properties": {
+          "relation_id": {"type": "string", "pattern": "^R-[0-9]{3,}$"},
+          "from_space_id": {"type": "string", "pattern": "^S-[0-9]{3,}$"},
+          "to_space_id": {"type": "string", "pattern": "^S-[0-9]{3,}$"},
+          "kind": {"enum": ["must_be_near", "prefer_be_near", "must_be_separate", "shared_support"]},
+          "basis": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["kind"],
+            "properties": {
+              "kind": {"enum": ["brief_stated", "human_working"]},
+              "locator": {"type": "string", "minLength": 1},
+              "reason": {"type": "string", "minLength": 1}
+            },
+            "allOf": [
+              {
+                "if": {"properties": {"kind": {"const": "brief_stated"}}, "required": ["kind"]},
+                "then": {"required": ["locator"], "not": {"required": ["reason"]}},
+                "else": {"required": ["reason"], "not": {"required": ["locator"]}}
+              }
+            ]
+          }
+        }
+      }
+    },
+    "unresolved_program_input": {
+      "type": "array",
+      "description": "Explicit human records keeping an otherwise unmapped confirmed program locator visible, each with a reason.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["record_id", "locator", "reason"],
+        "properties": {
+          "record_id": {"type": "string", "pattern": "^UPI-[0-9]{3,}$"},
+          "locator": {"type": "string", "minLength": 1},
+          "reason": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "clarification_questions": {
+      "type": "array",
+      "maxItems": 3,
+      "items": {"type": "string", "minLength": 1},
+      "description": "At most three human-authored questions; the builder never adds questions."
+    },
+    "human_confirmation": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status"],
+          "properties": {"status": {"const": "pending"}}
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status", "confirmed_by", "confirmed_at", "action", "pending_draft_sha256"],
+          "properties": {
+            "status": {"const": "confirmed"},
+            "confirmed_by": {"type": "string", "minLength": 1},
+            "confirmed_at": {"type": "string"},
+            "action": {"const": "CONFIRM_STUDENT_SPATIAL_PROGRAM_DRAFT"},
+            "pending_draft_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://architecture-pre-design-skills.local/schemas/student-dimension-selection/1.0.0",
+  "title": "Student Dimension Selection",
+  "description": "A direct human selection record: for every candidate set of one confirmed student dimension plan, the human picks exactly one existing option key. It carries no geometry, no rationale, no alternative, no derived area, and no design field; the builder never injects or rewrites candidate dimensions.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "selection_kind",
+    "source_dimension_plan_sha256",
+    "selections",
+    "action",
+    "selected_by",
+    "selected_at"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "selection_kind": {"const": "student_dimension_selection"},
+    "source_dimension_plan_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "The canonical JSON plus newline SHA-256 of the confirmed student dimension plan being answered."
+    },
+    "selections": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["space_name", "selected_option_key"],
+        "properties": {
+          "space_name": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The unique name of one candidate set in the confirmed dimension plan."
+          },
+          "selected_option_key": {"enum": ["A", "B", "C", "D", "E", "F"]}
+        }
+      }
+    },
+    "action": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Must equal SELECT_STUDENT_DIMENSION_CANDIDATES; other actions are rejected as an invalid human record."
+    },
+    "selected_by": {
+      "type": "string",
+      "minLength": 1,
+      "description": "A human label; agent and model labels are rejected."
+    },
+    "selected_at": {
+      "type": "string",
+      "description": "A timezone-qualified RFC 3339 date-time supplied by the human; no system clock is read."
+    }
+  }
+}

@@ -1,0 +1,139 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://architecture-pre-design-skills.local/schemas/student-circulation-environment-draft/1.0.0",
+  "title": "Student Circulation and Environmental Intent Draft",
+  "description": "A human-authored draft that organizes only what the student already wrote: horizontal circulation relations between confirmed zones, vertical movement intentions across levels, and environmental preferences for zones or spaces. It is not a site analysis and never upgrades a preference into a fact. The builder decides no entrance, core, stair, lift, ramp position, orientation, wind, sun, site conclusion, coordinate, plan, massing, grid, elevation, or height, and recommends, ranks, or selects nothing.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "draft_kind",
+    "source_floor_zoning_sha256",
+    "circulation_relations",
+    "vertical_movement_intents",
+    "environmental_intents",
+    "unresolved_items",
+    "clarification_questions",
+    "human_confirmation"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "draft_kind": {"const": "student_circulation_environment_draft"},
+    "source_floor_zoning_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "The canonical JSON plus newline SHA-256 of the complete confirmed floor zoning framework this draft answers."
+    },
+    "circulation_relations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["relation_id", "from_zone_id", "to_zone_id", "flow_scope", "directionality", "note"],
+        "properties": {
+          "relation_id": {"type": "string", "pattern": "^CR-[0-9]{3,}$"},
+          "from_zone_id": {"type": "string", "pattern": "^Z-[0-9]{3,}$"},
+          "to_zone_id": {"type": "string", "pattern": "^Z-[0-9]{3,}$"},
+          "flow_scope": {"enum": ["public", "internal", "shared"]},
+          "directionality": {"enum": ["one_way", "two_way"]},
+          "note": {
+            "type": "string",
+            "minLength": 1,
+            "description": "A student-declared relation; never a corridor, door, entrance, width, length, coordinate, fire, or constructibility claim."
+          }
+        }
+      }
+    },
+    "vertical_movement_intents": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["transition_id", "from_zone_id", "to_zone_id", "mode", "flow_scope", "note"],
+        "properties": {
+          "transition_id": {"type": "string", "pattern": "^VT-[0-9]{3,}$"},
+          "from_zone_id": {"type": "string", "pattern": "^Z-[0-9]{3,}$"},
+          "to_zone_id": {"type": "string", "pattern": "^Z-[0-9]{3,}$"},
+          "mode": {"enum": ["stair", "lift", "ramp", "other"]},
+          "flow_scope": {"enum": ["public", "internal", "shared"]},
+          "note": {
+            "type": "string",
+            "minLength": 1,
+            "description": "A student-written movement intention; never a stair, lift, or ramp count, size, position, clearance, code, accessibility, fire, or structural claim."
+          }
+        }
+      }
+    },
+    "environmental_intents": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["intent_id", "target_kind", "target_id", "topic", "preference", "note"],
+        "properties": {
+          "intent_id": {"type": "string", "pattern": "^EI-[0-9]{3,}$"},
+          "target_kind": {"enum": ["zone", "space"]},
+          "target_id": {
+            "type": "string",
+            "minLength": 1,
+            "description": "A real zone id for a zone target, or a real, unique selected space name for a space target."
+          },
+          "topic": {"enum": ["daylight", "view", "noise", "ventilation"]},
+          "preference": {"enum": ["prefer", "avoid", "neutral"]},
+          "note": {
+            "type": "string",
+            "minLength": 1,
+            "description": "A student preference or intention awaiting verification; never a verified site fact, orientation, sun path, wind direction, measurement, or performance value."
+          }
+        }
+      }
+    },
+    "unresolved_items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["record_id", "subject_kind", "target_kind", "target_id", "reason"],
+        "properties": {
+          "record_id": {"type": "string", "pattern": "^UCE-[0-9]{3,}$"},
+          "subject_kind": {"enum": ["circulation_relation", "vertical_movement", "environmental_intent"]},
+          "target_kind": {"enum": ["zone", "level", "space"]},
+          "target_id": {
+            "type": "string",
+            "minLength": 1,
+            "description": "A real zone id, level id, or space name matching the subject kind."
+          },
+          "reason": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "clarification_questions": {
+      "type": "array",
+      "maxItems": 3,
+      "items": {"type": "string", "minLength": 1},
+      "description": "At most three human-authored questions, carried verbatim; the builder never adds questions."
+    },
+    "human_confirmation": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status"],
+          "properties": {"status": {"const": "pending"}}
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status", "confirmed_by", "confirmed_at", "action", "pending_circulation_environment_draft_sha256"],
+          "properties": {
+            "status": {"const": "confirmed"},
+            "confirmed_by": {"type": "string", "minLength": 1},
+            "confirmed_at": {"type": "string"},
+            "action": {"const": "CONFIRM_STUDENT_CIRCULATION_ENVIRONMENT_DRAFT"},
+            "pending_circulation_environment_draft_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+          }
+        }
+      ]
+    }
+  }
+}

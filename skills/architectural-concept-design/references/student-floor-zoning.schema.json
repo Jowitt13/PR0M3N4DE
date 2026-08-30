@@ -1,0 +1,159 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://architecture-pre-design-skills.local/schemas/student-floor-zoning/1.0.0",
+  "title": "Student Floor Zoning Framework",
+  "description": "A deterministic projection of the student's own floor and functional zoning draft over human-selected dimension candidates. It decides no level count, entrance, circulation, coordinate, site plan, massing, grid, elevation, or height; it recommends, ranks, selects, and judges no zone. JSON data only: no PPTX, web page, image, or drawing.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "zoning_kind", "source_binding", "student_view"],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "zoning_kind": {"const": "student_floor_zoning"},
+    "source_binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "digest_input_hash",
+        "confirmed_digest_sha256",
+        "pending_digest_sha256",
+        "start_board_sha256",
+        "confirmed_program_draft_sha256",
+        "pending_program_draft_sha256",
+        "confirmed_program_sha256",
+        "pending_dimension_draft_sha256",
+        "confirmed_dimension_draft_sha256",
+        "confirmed_dimension_plan_sha256",
+        "dimension_selection_sha256",
+        "pending_floor_zoning_draft_sha256",
+        "confirmed_floor_zoning_draft_sha256"
+      ],
+      "properties": {
+        "digest_input_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "confirmed_digest_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "pending_digest_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "start_board_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "confirmed_program_draft_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "pending_program_draft_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "confirmed_program_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "pending_dimension_draft_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "confirmed_dimension_draft_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "confirmed_dimension_plan_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "dimension_selection_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "pending_floor_zoning_draft_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "confirmed_floor_zoning_draft_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    },
+    "student_view": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "project_title",
+        "stage",
+        "levels",
+        "boundaries",
+        "unresolved_zoning",
+        "clarification_questions",
+        "next_action",
+        "boundaries_statement"
+      ],
+      "properties": {
+        "project_title": {"type": "string", "minLength": 1},
+        "stage": {"const": "floor_zoning_confirmed_ready_for_next_step"},
+        "levels": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["label", "order", "zones"],
+            "properties": {
+              "label": {"type": "string", "minLength": 1},
+              "order": {"type": "integer", "minimum": 1},
+              "zones": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["name", "access_scope", "activity_character", "spaces"],
+                  "properties": {
+                    "name": {"type": "string", "minLength": 1},
+                    "access_scope": {"enum": ["public", "internal", "shared"]},
+                    "activity_character": {"enum": ["active", "quiet", "mixed"]},
+                    "spaces": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "name",
+                          "selected_option_key",
+                          "long_side_m",
+                          "short_side_m",
+                          "footprint_area_m2",
+                          "area_source",
+                          "confirmed_area_m2"
+                        ],
+                        "properties": {
+                          "name": {"type": "string", "minLength": 1},
+                          "selected_option_key": {"enum": ["A", "B", "C", "D", "E", "F"]},
+                          "long_side_m": {"type": "string", "pattern": "^[0-9]+(\\.[0-9]{1,2})?$"},
+                          "short_side_m": {"type": "string", "pattern": "^[0-9]+(\\.[0-9]{1,2})?$"},
+                          "footprint_area_m2": {"type": "string", "pattern": "^-?[0-9]+(\\.[0-9]+)?$"},
+                          "area_source": {"enum": ["brief_stated", "human_working"]},
+                          "confirmed_area_m2": {"type": "string", "pattern": "^[0-9]+(\\.[0-9]{1,2})?$"}
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "boundaries": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["from_zone", "to_zone", "note"],
+            "properties": {
+              "from_zone": {"type": "string", "minLength": 1},
+              "to_zone": {"type": "string", "minLength": 1},
+              "note": {"type": "string", "minLength": 1}
+            }
+          }
+        },
+        "unresolved_zoning": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["space_name", "reason"],
+            "properties": {
+              "space_name": {"type": "string", "minLength": 1},
+              "reason": {"type": "string", "minLength": 1}
+            }
+          }
+        },
+        "clarification_questions": {
+          "type": "array",
+          "maxItems": 3,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "next_action": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["action", "description"],
+          "properties": {
+            "action": {"enum": ["resolve_floor_zoning_gaps", "circulation_and_environment_framework"]},
+            "description": {"type": "string", "minLength": 1}
+          }
+        },
+        "boundaries_statement": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 1}
+        }
+      }
+    }
+  }
+}

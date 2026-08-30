@@ -8,6 +8,7 @@ import json
 import os
 import re
 import shutil
+import stat
 import sys
 import tempfile
 import tomllib
@@ -23,6 +24,7 @@ from _rfc3339 import is_rfc3339_datetime
 SKILL_ID = "architectural-concept-design"
 MANIFEST_NAME = ".architecture-pre-design-release-manifest.json"
 MANIFEST_VERSION = "1.0.0"
+CHECKSUM_SUFFIX = ".sha256"
 SHA256_RE = re.compile(r"^[a-f0-9]{64}$")
 GIT_SHA_RE = re.compile(r"^[a-f0-9]{40}$")
 SEMVER_RE = re.compile(
@@ -37,14 +39,14 @@ class ReleaseResult(TypedDict):
     """Machine-readable result for one package operation."""
 
     ok: bool
-    action: Literal["built", "verified", "installed", "already_installed", "failed"]
+    action: Literal["built", "verified", "installed", "already_installed", "checksummed", "failed"]
     manifest: dict[str, Any] | None
     errors: list[str]
 
 
 def _result(
     ok: bool,
-    action: Literal["built", "verified", "installed", "already_installed", "failed"],
+    action: Literal["built", "verified", "installed", "already_installed", "checksummed", "failed"],
     manifest: dict[str, Any] | None = None,
     errors: Sequence[str] = (),
 ) -> ReleaseResult:
@@ -71,6 +73,27 @@ def _sha256(data: bytes) -> str:
 
 def _is_excluded(relative: PurePosixPath) -> bool:
     return any(part in EXCLUDED_PARTS for part in relative.parts) or relative.suffix == ".pyc"
+
+
+def _is_link_or_reparse(path: Path) -> bool:
+    """Report whether *path* itself is a symlink, junction, or reparse point.
+
+    The probe inspects the entry with ``os.lstat()`` semantics only, so the
+    link target is never resolved, read, or written. Windows junctions report
+    ``Path.is_symlink() == False``, so the reparse-point file attribute is
+    checked explicitly. Whenever the entry cannot be safely inspected the
+    verifier fails closed.
+    """
+
+    try:
+        if path.is_symlink():
+            return True
+        if hasattr(Path, "is_junction") and path.is_junction():
+            return True
+        attributes = os.lstat(path).st_file_attributes if os.name == "nt" else 0
+    except OSError:
+        return True
+    return bool(attributes & stat.FILE_ATTRIBUTE_REPARSE_POINT)
 
 
 def _is_allowed_package_path(relative: PurePosixPath) -> bool:
@@ -274,7 +297,14 @@ def verify_release_archive(archive_path: Path) -> ReleaseResult:
 
 
 def verify_installed_skill(skill_root: Path) -> ReleaseResult:
-    """Verify an extracted release directory without following generated environments."""
+    """Verify an extracted release directory without following generated environments.
+
+    Every entry is first proved not to be a symlink, Windows junction, or
+    reparse point. An excluded runtime directory root (virtual environment,
+    bytecode, or repository cache) is only pruned after it has been proved to
+    be a real directory inside the installed root, so exclusion can never act
+    as an escape channel to an external target.
+    """
 
     manifest_path = skill_root / MANIFEST_NAME
     try:
@@ -285,15 +315,33 @@ def verify_installed_skill(skill_root: Path) -> ReleaseResult:
         assert isinstance(records, list)
         expected = {str(record["path"]): record for record in records if isinstance(record, Mapping)}
         actual: set[str] = set()
-        for path in skill_root.rglob("*"):
-            if path.is_symlink():
-                return _result(False, "failed", errors=["INSTALL_INVALID: installed Skill contains a symlink"])
-            if not path.is_file():
-                continue
-            relative = PurePosixPath(path.relative_to(skill_root).as_posix())
-            if relative.name == MANIFEST_NAME or _is_excluded(relative):
-                continue
-            actual.add(relative.as_posix())
+        queue: list[Path] = [skill_root]
+        while queue:
+            directory = queue.pop()
+            try:
+                entries = sorted(os.scandir(directory), key=lambda entry: entry.name)
+            except OSError as error:
+                return _result(False, "failed", errors=[f"INSTALL_INVALID: {error}"])
+            for entry in entries:
+                path = Path(entry.path)
+                if _is_link_or_reparse(path):
+                    return _result(False, "failed", errors=["INSTALL_INVALID: installed Skill contains a symlink"])
+                if entry.is_dir(follow_symlinks=False):
+                    # Excluded runtime roots may legitimately contain
+                    # interpreter symlinks inside a genuine environment; the
+                    # root itself has just been proved to be a real directory
+                    # inside the installed root, so its interior is pruned
+                    # without being entered.
+                    if entry.name in EXCLUDED_PARTS:
+                        continue
+                    queue.append(path)
+                    continue
+                relative = PurePosixPath(path.relative_to(skill_root).as_posix())
+                if relative.name == MANIFEST_NAME or _is_excluded(relative):
+                    continue
+                if not path.is_file():
+                    continue
+                actual.add(relative.as_posix())
         if actual != set(expected):
             return _result(False, "failed", errors=["INSTALL_CONTENT_MISMATCH: installed files do not exactly match the manifest"])
         for relative, record in expected.items():
@@ -303,6 +351,73 @@ def verify_installed_skill(skill_root: Path) -> ReleaseResult:
         return _result(True, "verified", manifest)
     except (OSError, ValueError, KeyError) as error:
         return _result(False, "failed", errors=[f"INSTALL_INVALID: {error}"])
+
+
+def _canonical_sidecar(archive_name: str, checksum: str) -> bytes:
+    return f"{checksum}  {archive_name}\n".encode("utf-8")
+
+
+def _parse_sidecar(raw: bytes, expected_name: str) -> tuple[list[str], str | None]:
+    """Parse one canonical sidecar line without touching the archive target."""
+
+    try:
+        text = raw.decode("utf-8")
+    except UnicodeDecodeError:
+        return ["CHECKSUM_FORMAT_INVALID: sidecar must be UTF-8"], None
+    if "\r" in text or "\0" in text:
+        return ["CHECKSUM_FORMAT_INVALID: sidecar must use a single LF line ending"], None
+    if text.count("\n") != 1 or not text.endswith("\n"):
+        return ["CHECKSUM_FORMAT_INVALID: sidecar must contain exactly one LF-terminated line"], None
+    fields = text[:-1].split("  ")
+    if len(fields) != 2 or not fields[0] or not fields[1]:
+        return ["CHECKSUM_FORMAT_INVALID: sidecar line must be '<sha256>  <archive filename>'"], None
+    checksum, name = fields
+    errors: list[str] = []
+    if not SHA256_RE.fullmatch(checksum):
+        errors.append("CHECKSUM_FORMAT_INVALID: sidecar checksum must be a lowercase SHA-256")
+    if name != expected_name:
+        errors.append(f"CHECKSUM_NAME_MISMATCH: sidecar filename does not match {expected_name}")
+    return errors, checksum
+
+
+def write_archive_checksum(archive_path: Path, sidecar_path: Path | None = None) -> ReleaseResult:
+    """Write the canonical SHA-256 sidecar bound to the archive's raw bytes."""
+
+    try:
+        if not archive_path.is_file():
+            raise ValueError("ARCHIVE_INVALID: release archive is missing")
+        sidecar = sidecar_path if sidecar_path is not None else archive_path.with_name(archive_path.name + CHECKSUM_SUFFIX)
+        content = _canonical_sidecar(archive_path.name, _sha256(archive_path.read_bytes()))
+        sidecar.parent.mkdir(parents=True, exist_ok=True)
+        temporary = sidecar.with_name(f".{sidecar.name}.tmp-{os.getpid()}")
+        try:
+            temporary.write_bytes(content)
+            os.replace(temporary, sidecar)
+        finally:
+            temporary.unlink(missing_ok=True)
+        return _result(True, "checksummed")
+    except (OSError, ValueError) as error:
+        return _result(False, "failed", errors=[str(error)])
+
+
+def verify_archive_checksum(archive_path: Path, sidecar_path: Path | None = None) -> ReleaseResult:
+    """Verify the archive's raw bytes against its canonical SHA-256 sidecar."""
+
+    try:
+        if not archive_path.is_file():
+            raise ValueError("release archive is missing")
+        sidecar = sidecar_path if sidecar_path is not None else archive_path.with_name(archive_path.name + CHECKSUM_SUFFIX)
+        if not sidecar.is_file():
+            raise ValueError("checksum sidecar is missing")
+        errors, checksum = _parse_sidecar(sidecar.read_bytes(), archive_path.name)
+        if errors:
+            return _result(False, "failed", errors=errors)
+        assert checksum is not None
+        if _sha256(archive_path.read_bytes()) != checksum:
+            return _result(False, "failed", errors=["CHECKSUM_MISMATCH: archive bytes do not match the sidecar checksum"])
+        return _result(True, "verified")
+    except (OSError, ValueError) as error:
+        return _result(False, "failed", errors=[f"CHECKSUM_INVALID: {error}"])
 
 
 def install_release_archive(archive_path: Path, skills_root: Path) -> ReleaseResult:
@@ -359,12 +474,21 @@ def main(argv: Sequence[str]) -> int:
     install = commands.add_parser("install")
     install.add_argument("--archive", required=True, type=Path)
     install.add_argument("--skills-root", required=True, type=Path)
+    checksum = commands.add_parser("checksum")
+    checksum.add_argument("mode", choices=("write", "verify"))
+    checksum.add_argument("--archive", required=True, type=Path)
+    checksum.add_argument("--sidecar", type=Path, default=None)
     arguments = parser.parse_args(argv[1:])
 
     if arguments.command == "build":
         result = build_release_archive(arguments.source_root, arguments.output, source_commit=arguments.source_commit, build_time=arguments.build_time)
     elif arguments.command == "verify":
         result = verify_release_archive(arguments.archive)
+    elif arguments.command == "checksum":
+        if arguments.mode == "write":
+            result = write_archive_checksum(arguments.archive, arguments.sidecar)
+        else:
+            result = verify_archive_checksum(arguments.archive, arguments.sidecar)
     else:
         result = install_release_archive(arguments.archive, arguments.skills_root)
     print(json.dumps(result, ensure_ascii=False, sort_keys=True, separators=(",", ":")))
