@@ -1,0 +1,119 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://architecture-pre-design-skills.local/schemas/student-floor-zoning-draft/1.0.0",
+  "title": "Student Floor Zoning Draft",
+  "description": "A human-authored floor and functional zoning draft. Levels, their labels and sequence, zones, access and activity attributes, non-geometric public-internal boundaries, and unresolved zoning items are all student input; the builder never adds, removes, reorders, or infers a level, assigns a space, or resolves an item.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "draft_kind",
+    "source_selection_sha256",
+    "levels",
+    "boundaries",
+    "unresolved_zoning",
+    "clarification_questions",
+    "human_confirmation"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "draft_kind": {"const": "student_floor_zoning_draft"},
+    "source_selection_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "The canonical JSON plus newline SHA-256 of the complete dimension selection record this draft answers."
+    },
+    "levels": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["level_id", "label", "order", "zones"],
+        "properties": {
+          "level_id": {"type": "string", "pattern": "^LV-[0-9]{3,}$"},
+          "label": {"type": "string", "minLength": 1},
+          "order": {"type": "integer", "minimum": 1},
+          "zones": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["zone_id", "name", "access_scope", "activity_character", "space_names"],
+              "properties": {
+                "zone_id": {"type": "string", "pattern": "^Z-[0-9]{3,}$"},
+                "name": {"type": "string", "minLength": 1},
+                "access_scope": {"enum": ["public", "internal", "shared"]},
+                "activity_character": {"enum": ["active", "quiet", "mixed"]},
+                "space_names": {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {"type": "string", "minLength": 1},
+                  "description": "Names of dimension-selected spaces; every selected space appears in exactly one zone or one unresolved item."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "boundaries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["boundary_id", "from_zone_id", "to_zone_id", "note"],
+        "properties": {
+          "boundary_id": {"type": "string", "pattern": "^B-[0-9]{3,}$"},
+          "from_zone_id": {"type": "string", "pattern": "^Z-[0-9]{3,}$"},
+          "to_zone_id": {"type": "string", "pattern": "^Z-[0-9]{3,}$"},
+          "note": {
+            "type": "string",
+            "minLength": 1,
+            "description": "A student-declared non-geometric relation; never a door, entrance, stair, corridor, gate, coordinate, or plan."
+          }
+        }
+      }
+    },
+    "unresolved_zoning": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["record_id", "space_name", "reason"],
+        "properties": {
+          "record_id": {"type": "string", "pattern": "^UZ-[0-9]{3,}$"},
+          "space_name": {"type": "string", "minLength": 1},
+          "reason": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "clarification_questions": {
+      "type": "array",
+      "maxItems": 3,
+      "items": {"type": "string", "minLength": 1},
+      "description": "At most three human-authored questions; the builder never adds questions."
+    },
+    "human_confirmation": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status"],
+          "properties": {"status": {"const": "pending"}}
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status", "confirmed_by", "confirmed_at", "action", "pending_floor_zoning_draft_sha256"],
+          "properties": {
+            "status": {"const": "confirmed"},
+            "confirmed_by": {"type": "string", "minLength": 1},
+            "confirmed_at": {"type": "string"},
+            "action": {"const": "CONFIRM_STUDENT_FLOOR_ZONING_DRAFT"},
+            "pending_floor_zoning_draft_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+          }
+        }
+      ]
+    }
+  }
+}

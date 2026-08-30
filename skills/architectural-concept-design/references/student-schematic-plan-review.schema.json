@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://architecture-pre-design-skills.local/schemas/student-schematic-plan-review/1.0.0",
+  "title": "Student Schematic Plan Review Record",
+  "description": "One closed human review record bound to an already validated student schematic plan blocks document. The record never moves, redraws, ranks, or generates a schematic plan. A revise_schematic_plan outcome is valid human feedback but cannot produce a state handoff.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "record_kind",
+    "action",
+    "reviewed_by",
+    "reviewed_at",
+    "source_schematic_plan_blocks_sha256",
+    "outcome",
+    "review_notes"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "record_kind": {"const": "student_schematic_plan_review"},
+    "action": {"const": "REVIEW_STUDENT_SCHEMATIC_PLAN_BLOCKS"},
+    "reviewed_by": {"type": "string", "minLength": 1},
+    "reviewed_at": {"type": "string", "minLength": 1},
+    "source_schematic_plan_blocks_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "The canonical JSON plus newline SHA-256 of the exact ARCH-107 schematic plan blocks document reviewed by the human."
+    },
+    "outcome": {
+      "enum": ["continue_to_handoff", "revise_schematic_plan"],
+      "description": "A human decision only. The builder accepts continue_to_handoff for a state handoff and fails closed on revise_schematic_plan without creating output."
+    },
+    "review_notes": {
+      "type": "array",
+      "maxItems": 3,
+      "items": {"type": "string", "minLength": 1},
+      "description": "At most three human-authored review notes carried verbatim. The machine never adds, edits, or interprets them."
+    }
+  }
+}

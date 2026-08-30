@@ -1,0 +1,177 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://architecture-pre-design-skills.local/schemas/student-massing-grid-height/1.0.0",
+  "title": "Student Massing, Grid and Height Hypotheses Framework",
+  "description": "A deterministic projection of the student's own two to six massing, grid, and height hypotheses over one confirmed circulation and environmental intent framework. The machine projects completeness, numeric accounting, coverage, and traceability, and restates facts for comparison; it generates nothing and picks nothing. JSON data only: no PPTX, image, HTML, drawing, or three-dimensional model.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "framework_kind", "source_binding", "student_view"],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "framework_kind": {"const": "student_massing_grid_height_hypotheses"},
+    "source_binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "digest_input_hash",
+        "confirmed_digest_sha256",
+        "pending_digest_sha256",
+        "start_board_sha256",
+        "confirmed_program_draft_sha256",
+        "pending_program_draft_sha256",
+        "confirmed_program_sha256",
+        "pending_dimension_draft_sha256",
+        "confirmed_dimension_draft_sha256",
+        "confirmed_dimension_plan_sha256",
+        "dimension_selection_sha256",
+        "pending_floor_zoning_draft_sha256",
+        "confirmed_floor_zoning_draft_sha256",
+        "floor_zoning_framework_sha256",
+        "pending_circulation_environment_draft_sha256",
+        "confirmed_circulation_environment_draft_sha256",
+        "circulation_environment_framework_sha256",
+        "pending_massing_grid_height_draft_sha256",
+        "confirmed_massing_grid_height_draft_sha256"
+      ],
+      "properties": {
+        "digest_input_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "confirmed_digest_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "pending_digest_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "start_board_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "confirmed_program_draft_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "pending_program_draft_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "confirmed_program_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "pending_dimension_draft_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "confirmed_dimension_draft_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "confirmed_dimension_plan_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "dimension_selection_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "pending_floor_zoning_draft_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "confirmed_floor_zoning_draft_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "floor_zoning_framework_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "pending_circulation_environment_draft_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "confirmed_circulation_environment_draft_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "circulation_environment_framework_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "pending_massing_grid_height_draft_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "confirmed_massing_grid_height_draft_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    },
+    "student_view": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "project_title",
+        "stage",
+        "hypotheses",
+        "comparison_summary",
+        "clarification_questions",
+        "next_action",
+        "boundaries_statement"
+      ],
+      "properties": {
+        "project_title": {"type": "string", "minLength": 1},
+        "stage": {"const": "massing_grid_height_hypotheses_confirmed"},
+        "hypotheses": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 6,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["label", "massing_groups", "grid_intent", "vertical_intervals", "vertical_interval_subtotal_m", "note"],
+            "properties": {
+              "label": {"type": "string", "minLength": 1},
+              "massing_groups": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["level", "zones", "role", "note", "space_footprint_subtotal_m2"],
+                  "properties": {
+                    "level": {"type": "string", "minLength": 1},
+                    "zones": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+                    "role": {"enum": ["primary", "secondary", "service"]},
+                    "note": {"type": "string", "minLength": 1},
+                    "space_footprint_subtotal_m2": {
+                      "type": "string",
+                      "pattern": "^-?[0-9]+(\\.[0-9]+)?$",
+                      "description": "Accounting subtotal of the dimension-declared footprints of the group's spaces; never building area, gross area, or actual massing."
+                    }
+                  }
+                }
+              },
+              "grid_intent": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["grid_pattern", "primary_bay_m", "secondary_bay_m", "note"],
+                "properties": {
+                  "grid_pattern": {"enum": ["rectilinear", "hybrid", "other"]},
+                  "primary_bay_m": {"type": "string", "pattern": "^[0-9]+(\\.[0-9]{1,2})?$"},
+                  "secondary_bay_m": {"type": "string", "pattern": "^[0-9]+(\\.[0-9]{1,2})?$"},
+                  "note": {"type": "string", "minLength": 1}
+                }
+              },
+              "vertical_intervals": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["level", "floor_to_floor_m", "note"],
+                  "properties": {
+                    "level": {"type": "string", "minLength": 1},
+                    "floor_to_floor_m": {"type": "string", "pattern": "^[0-9]+(\\.[0-9]{1,2})?$"},
+                    "note": {"type": "string", "minLength": 1}
+                  }
+                }
+              },
+              "vertical_interval_subtotal_m": {
+                "type": "string",
+                "pattern": "^-?[0-9]+(\\.[0-9]+)?$",
+                "description": "Subtotal of the student-declared floor-to-floor values; never a building height, planning height, elevation, structural height, or code conclusion."
+              },
+              "note": {"type": "string", "minLength": 1}
+            }
+          }
+        },
+        "comparison_summary": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 6,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["label", "group_count", "grid_pattern", "primary_bay_m", "secondary_bay_m", "vertical_interval_subtotal_m"],
+            "properties": {
+              "label": {"type": "string", "minLength": 1},
+              "group_count": {"type": "integer", "minimum": 1},
+              "grid_pattern": {"enum": ["rectilinear", "hybrid", "other"]},
+              "primary_bay_m": {"type": "string", "pattern": "^[0-9]+(\\.[0-9]{1,2})?$"},
+              "secondary_bay_m": {"type": "string", "pattern": "^[0-9]+(\\.[0-9]{1,2})?$"},
+              "vertical_interval_subtotal_m": {"type": "string", "pattern": "^-?[0-9]+(\\.[0-9]+)?$"}
+            }
+          }
+        },
+        "clarification_questions": {
+          "type": "array",
+          "maxItems": 3,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "next_action": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["action", "description"],
+          "properties": {
+            "action": {"const": "human_compare_and_select_massing_grid_height_hypotheses"},
+            "description": {"type": "string", "minLength": 1}
+          }
+        },
+        "boundaries_statement": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 1}
+        }
+      }
+    }
+  }
+}

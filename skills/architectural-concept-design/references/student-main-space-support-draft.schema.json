@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://architecture-pre-design-skills.local/schemas/student-main-space-support-draft/1.0.0",
+  "title": "Student Main Space and Supporting Space Draft",
+  "description": "A closed human-authored organization draft over one exact ARCH-108 schematic-plan state handoff. It identifies main, supporting, and shared-service roles plus human-authored support and sequence intentions; it never moves a block, derives a plan, or decides architecture.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "draft_kind", "source_state_handoff_sha256", "space_roles", "support_relationships", "sequence_intents", "unresolved_items", "human_confirmation"],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "draft_kind": {"const": "student_main_space_support_draft"},
+    "source_state_handoff_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "space_roles": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["space_name", "role", "note"],
+        "properties": {
+          "space_name": {"type": "string", "minLength": 1},
+          "role": {"enum": ["main_space", "supporting_space", "shared_service"]},
+          "note": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "support_relationships": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["main_space_name", "support_space_name", "relationship_kind", "note"],
+        "properties": {
+          "main_space_name": {"type": "string", "minLength": 1},
+          "support_space_name": {"type": "string", "minLength": 1},
+          "relationship_kind": {"enum": ["direct_support", "shared_support", "buffered_transition"]},
+          "note": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "sequence_intents": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["level_label", "ordered_space_names", "intent_kind", "note"],
+        "properties": {
+          "level_label": {"type": "string", "minLength": 1},
+          "ordered_space_names": {"type": "array", "minItems": 2, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+          "intent_kind": {"enum": ["active_to_quiet", "open_to_contained", "public_to_private", "flexible_to_defined"]},
+          "note": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "unresolved_items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["record_id", "subject_space_names", "reason"],
+        "properties": {
+          "record_id": {"type": "string", "pattern": "^UMS-[0-9]{3}$"},
+          "subject_space_names": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+          "reason": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "human_confirmation": {
+      "oneOf": [
+        {"type": "object", "additionalProperties": false, "required": ["status"], "properties": {"status": {"const": "pending"}}},
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status", "confirmed_by", "confirmed_at", "action", "pending_main_space_support_draft_sha256"],
+          "properties": {
+            "status": {"const": "confirmed"},
+            "confirmed_by": {"type": "string", "minLength": 1},
+            "confirmed_at": {"type": "string"},
+            "action": {"const": "CONFIRM_STUDENT_MAIN_SPACE_SUPPORT_DRAFT"},
+            "pending_main_space_support_draft_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+          }
+        }
+      ]
+    }
+  }
+}

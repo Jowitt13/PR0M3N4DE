@@ -1,0 +1,310 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://architecture-pre-design-skills.local/schemas/student-selected-hypothesis-state/1.0.0",
+  "title": "Student Selected Hypothesis State Package",
+  "description": "A closed, deterministic state package that wraps one human-selected massing, grid, and height hypothesis from a selected ARCH-104 comparison document. It is a verified record of the human selection and its controlled handoff to the next separately reviewed stage; it is not the generic project state package, not a design instruction, and it generates no drawing, image, PPTX, or three-dimensional model. JSON data only.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "state_kind",
+    "source_binding",
+    "selected_state",
+    "student_handoff",
+    "handoff_contract"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "state_kind": {"const": "student_selected_hypothesis_state"},
+    "source_binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "digest_input_hash",
+        "confirmed_digest_sha256",
+        "pending_digest_sha256",
+        "start_board_sha256",
+        "confirmed_program_draft_sha256",
+        "pending_program_draft_sha256",
+        "confirmed_program_sha256",
+        "pending_dimension_draft_sha256",
+        "confirmed_dimension_draft_sha256",
+        "confirmed_dimension_plan_sha256",
+        "dimension_selection_sha256",
+        "pending_floor_zoning_draft_sha256",
+        "confirmed_floor_zoning_draft_sha256",
+        "floor_zoning_framework_sha256",
+        "pending_circulation_environment_draft_sha256",
+        "confirmed_circulation_environment_draft_sha256",
+        "circulation_environment_framework_sha256",
+        "pending_massing_grid_height_draft_sha256",
+        "confirmed_massing_grid_height_draft_sha256",
+        "massing_grid_height_framework_sha256",
+        "pending_student_hypothesis_comparison_draft_sha256",
+        "confirmed_student_hypothesis_comparison_draft_sha256",
+        "selected_comparison_document_sha256",
+        "human_selection_action",
+        "human_selection_candidate_key",
+        "human_selection_selected_by",
+        "human_selection_selected_at",
+        "human_selection_source_comparison_document_sha256"
+      ],
+      "properties": {
+        "digest_input_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "confirmed_digest_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "pending_digest_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "start_board_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "confirmed_program_draft_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "pending_program_draft_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "confirmed_program_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "pending_dimension_draft_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "confirmed_dimension_draft_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "confirmed_dimension_plan_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "dimension_selection_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "pending_floor_zoning_draft_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "confirmed_floor_zoning_draft_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "floor_zoning_framework_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "pending_circulation_environment_draft_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "confirmed_circulation_environment_draft_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "circulation_environment_framework_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "pending_massing_grid_height_draft_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "confirmed_massing_grid_height_draft_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "massing_grid_height_framework_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "pending_student_hypothesis_comparison_draft_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "confirmed_student_hypothesis_comparison_draft_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "selected_comparison_document_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "The canonical JSON plus newline SHA-256 of the whole selected comparison document being wrapped."
+        },
+        "human_selection_action": {"const": "SELECT_STUDENT_MASSING_GRID_HEIGHT_HYPOTHESIS"},
+        "human_selection_candidate_key": {"type": "string", "pattern": "^MGH-[0-9]{3,}$"},
+        "human_selection_selected_by": {"type": "string", "minLength": 1},
+        "human_selection_selected_at": {"type": "string"},
+        "human_selection_source_comparison_document_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "The pending comparison document hash bound by the human selection record."
+        }
+      }
+    },
+    "selected_state": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["purpose", "selected_candidate_key", "selection_record"],
+      "properties": {
+        "purpose": {
+          "const": "machine_verification_binding_only",
+          "description": "This block exists for later controlled verification; it is not an automatic design instruction."
+        },
+        "selected_candidate_key": {"type": "string", "pattern": "^MGH-[0-9]{3,}$"},
+        "selection_record": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["action", "selected_by", "selected_at", "source_comparison_document_sha256"],
+          "properties": {
+            "action": {"const": "SELECT_STUDENT_MASSING_GRID_HEIGHT_HYPOTHESIS"},
+            "selected_by": {"type": "string", "minLength": 1},
+            "selected_at": {"type": "string"},
+            "source_comparison_document_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+          }
+        }
+      }
+    },
+    "student_handoff": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "project_title",
+        "stage",
+        "selected_candidate",
+        "selected_assessment",
+        "related_guidance",
+        "human_selection_summary",
+        "next_action",
+        "boundaries_statement"
+      ],
+      "properties": {
+        "project_title": {"type": "string", "minLength": 1},
+        "stage": {"const": "selected_hypothesis_confirmed"},
+        "selected_candidate": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["label", "massing_groups", "grid_intent", "vertical_intervals", "vertical_interval_subtotal_m", "note"],
+          "properties": {
+            "label": {"type": "string", "minLength": 1},
+            "massing_groups": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["level", "zones", "role", "note", "space_footprint_subtotal_m2"],
+                "properties": {
+                  "level": {"type": "string", "minLength": 1},
+                  "zones": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+                  "role": {"enum": ["primary", "secondary", "service"]},
+                  "note": {"type": "string", "minLength": 1},
+                  "space_footprint_subtotal_m2": {
+                    "type": "string",
+                    "pattern": "^-?[0-9]+(\\.[0-9]+)?$",
+                    "description": "Accounting subtotal of the dimension-declared footprints of the group's spaces; never building area, gross area, or actual massing."
+                  }
+                }
+              }
+            },
+            "grid_intent": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["grid_pattern", "primary_bay_m", "secondary_bay_m", "note"],
+              "properties": {
+                "grid_pattern": {"enum": ["rectilinear", "hybrid", "other"]},
+                "primary_bay_m": {"type": "string", "pattern": "^[0-9]+(\\.[0-9]{1,2})?$"},
+                "secondary_bay_m": {"type": "string", "pattern": "^[0-9]+(\\.[0-9]{1,2})?$"},
+                "note": {"type": "string", "minLength": 1}
+              }
+            },
+            "vertical_intervals": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["level", "floor_to_floor_m", "note"],
+                "properties": {
+                  "level": {"type": "string", "minLength": 1},
+                  "floor_to_floor_m": {"type": "string", "pattern": "^[0-9]+(\\.[0-9]{1,2})?$"},
+                  "note": {"type": "string", "minLength": 1}
+                }
+              }
+            },
+            "vertical_interval_subtotal_m": {
+              "type": "string",
+              "pattern": "^-?[0-9]+(\\.[0-9]+)?$",
+              "description": "Subtotal of the student-declared floor-to-floor values; never a building height, planning height, elevation, structural height, or code conclusion."
+            },
+            "note": {"type": "string", "minLength": 1}
+          }
+        },
+        "selected_assessment": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["applicable_preconditions", "advantages", "costs_or_risks", "reconsider_when", "criterion_judgments"],
+          "properties": {
+            "applicable_preconditions": {
+              "type": "array",
+              "minItems": 1,
+              "items": {"type": "string", "minLength": 1}
+            },
+            "advantages": {
+              "type": "array",
+              "minItems": 1,
+              "items": {"type": "string", "minLength": 1}
+            },
+            "costs_or_risks": {
+              "type": "array",
+              "minItems": 1,
+              "items": {"type": "string", "minLength": 1}
+            },
+            "reconsider_when": {
+              "type": "array",
+              "minItems": 1,
+              "items": {"type": "string", "minLength": 1}
+            },
+            "criterion_judgments": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["criterion", "judgment"],
+                "properties": {
+                  "criterion": {"type": "string", "minLength": 1},
+                  "judgment": {"type": "string", "minLength": 1}
+                }
+              }
+            }
+          }
+        },
+        "related_guidance": {
+          "oneOf": [
+            {"const": null},
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["basis", "basis_criteria", "advantages", "costs_or_risks", "reconsider_when", "bounds_statement"],
+              "properties": {
+                "basis": {"type": "string", "minLength": 1},
+                "basis_criteria": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+                "advantages": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+                "costs_or_risks": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+                "reconsider_when": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+                "bounds_statement": {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {"type": "string", "minLength": 1},
+                  "description": "Must carry the fixed sentence: This is decision guidance, not an automatic architectural decision."
+                }
+              }
+            }
+          ],
+          "description": "The student's own guidance projected only when the selected candidate appears in its focus; never a machine recommendation."
+        },
+        "human_selection_summary": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["selected_label", "selected_by", "selected_at"],
+          "properties": {
+            "selected_label": {"type": "string", "minLength": 1},
+            "selected_by": {"type": "string", "minLength": 1},
+            "selected_at": {"type": "string"}
+          }
+        },
+        "next_action": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["action", "description"],
+          "properties": {
+            "action": {"const": "author_selected_plan_framework_draft"},
+            "description": {"type": "string", "minLength": 1}
+          }
+        },
+        "boundaries_statement": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "handoff_contract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["confirmed_available", "must_not_infer", "invalidated_by_upstream_change", "prohibited_outputs"],
+      "properties": {
+        "confirmed_available": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 1},
+          "description": "What the next separately reviewed stage may rely on from this confirmed state."
+        },
+        "must_not_infer": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 1},
+          "description": "What the next stage must still not infer or conclude from this state."
+        },
+        "invalidated_by_upstream_change": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 1},
+          "description": "Upstream changes that invalidate this handoff and require rebuild plus revalidation."
+        },
+        "prohibited_outputs": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 1},
+          "description": "Outputs this handoff must never authorize: automatic generation, selection, drawing, or PPTX paths."
+        }
+      }
+    }
+  }
+}

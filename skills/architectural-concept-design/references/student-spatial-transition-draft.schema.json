@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://architecture-pre-design-skills.local/schemas/student-spatial-transition-draft/1.0.0",
+  "title": "Student Spatial Transition Draft",
+  "description": "A closed human-authored transition draft over one exact ARCH-109 main-space-support framework. It records only transition intentions for existing same-level source pairs; it never moves a block, derives a plan, or decides architecture.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "draft_kind", "source_main_space_support_framework_sha256", "transition_patterns", "unresolved_items", "human_confirmation"],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "draft_kind": {"const": "student_spatial_transition_draft"},
+    "source_main_space_support_framework_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "transition_patterns": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["record_id", "from_space_name", "to_space_name", "transition_kind", "note"],
+        "properties": {
+          "record_id": {"type": "string", "pattern": "^STP-[0-9]{3}$"},
+          "from_space_name": {"type": "string", "minLength": 1},
+          "to_space_name": {"type": "string", "minLength": 1},
+          "transition_kind": {"enum": ["gradual_opening", "gradual_enclosure", "buffered_transition", "interwoven_access", "remain_independent"]},
+          "note": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "unresolved_items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["record_id", "from_space_name", "to_space_name", "reason"],
+        "properties": {
+          "record_id": {"type": "string", "pattern": "^UST-[0-9]{3}$"},
+          "from_space_name": {"type": "string", "minLength": 1},
+          "to_space_name": {"type": "string", "minLength": 1},
+          "reason": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "human_confirmation": {
+      "oneOf": [
+        {"type": "object", "additionalProperties": false, "required": ["status"], "properties": {"status": {"const": "pending"}}},
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status", "confirmed_by", "confirmed_at", "action", "pending_spatial_transition_draft_sha256"],
+          "properties": {
+            "status": {"const": "confirmed"},
+            "confirmed_by": {"type": "string", "minLength": 1},
+            "confirmed_at": {"type": "string"},
+            "action": {"const": "CONFIRM_STUDENT_SPATIAL_TRANSITION_DRAFT"},
+            "pending_spatial_transition_draft_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+          }
+        }
+      ]
+    }
+  }
+}

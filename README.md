@@ -1,7 +1,5 @@
 # PR0M3N4DE
 
-**[简体中文](README.zh-CN.md)**
-
 > **A promenade through architectural reasoning.**
 
 Architecture is not encountered all at once. It is discovered through movement,
@@ -97,20 +95,19 @@ by contracts, deterministic scripts, or fixed evaluations.
 | Capability | Current implementation | Repository evidence |
 | --- | --- | --- |
 | Brief normalization | A loose human brief becomes thirteen explicitly labelled fields. `PROVIDED`, `UNKNOWN`, and `MISSING` remain distinct; the normalizer creates neither design content nor new evidence. | [normalized brief ledger](skills/architectural-concept-design/references/normalized-brief-ledger.md) · [input schema](skills/architectural-concept-design/references/normalized-brief-ledger.input.schema.json) · [normalizer](skills/architectural-concept-design/scripts/normalize_project_brief.py) |
-| Evidence discipline | Records carry `PROVIDED`, `VERIFIED`, `INFERRED`, `ASSUMED`, or `PROPOSED` labels. Contracts prevent an assumption or inference from silently being presented as verified fact. | [evidence schema](skills/architectural-concept-design/references/evidence.schema.json) · [brief/evidence protocol](skills/architectural-concept-design/references/brief-and-evidence.md) |
+| Evidence discipline | Records carry `PROVIDED`, `VERIFIED`, `INFERRED`, `ASSUMED`, or `PROPOSED` labels. Contracts prevent an assumption or inference from silently being presented as verified fact. | [core rules](docs/standards/CORE.md) · [evidence schema](skills/architectural-concept-design/references/evidence.schema.json) · [brief/evidence protocol](skills/architectural-concept-design/references/brief-and-evidence.md) |
 | Site, programme, and circulation reasoning | References structure site observations, programme, areas, adjacency, zoning, circulation, grid/core/height hypotheses, and missing information. Area arithmetic is handled by a deterministic local script. | [site/context](skills/architectural-concept-design/references/site-context-analysis.md) · [programme/area/circulation](skills/architectural-concept-design/references/program-area-and-circulation.md) · [area-schedule checker](skills/architectural-concept-design/scripts/check_area_schedule.py) |
 | Substantively different options | The output contract records hypotheses, options, criteria, comparisons, dependencies, and deliverables. Options must differ in spatial operations, not merely in style. The present `spatial_operation` field is an option description, not a generic evolution-history engine. | [concept options and decisions](skills/architectural-concept-design/references/concept-options-and-decisions.md) · [comparison/decision handoff](skills/architectural-concept-design/references/option-comparison-decision-handoff.md) · [state-package schema](skills/architectural-concept-design/references/output.schema.json) |
 | Human decision gate and state package | A deterministic assembler accepts a schema-valid brief plus **already human-authored** hypotheses, options, and criteria; it leaves the package awaiting an explicit human decision. The validator tracks dependencies and stale downstream state. | [project-state assembly](skills/architectural-concept-design/references/project-state-assembly.md) · [assembler](skills/architectural-concept-design/scripts/assemble_project_state.py) · [state validator](skills/architectural-concept-design/scripts/validate_state.py) |
 | State-only presentation handoff | For a validated real-project state with one explicit human selection and no reviewed runtime-candidate set, the Skill can create a bounded ten-page state-only handoff using team-original diagrams only. It does not render a PPTX or transfer external precedents. | [state-only handoff](skills/architectural-concept-design/references/state-only-presentation-handoff.md) · [builder](skills/architectural-concept-design/scripts/build_state_only_presentation_handoff.py) |
 | Controlled source-access boundaries | A local registry, request-plan checks, synthetic replay, runtime dry-run, and explicitly gated canary contracts enforce exact sources, budgets, and stop-on-denial behaviour. They are not a general web-search or scraping facility. | [source registry](skills/architectural-concept-design/references/source-access-registry.json) · [source-access gate](skills/architectural-concept-design/references/runtime-source-access-gate.md) · [controlled plan](skills/architectural-concept-design/references/controlled-crawl-plan.md) |
-| Release integrity | The repository includes deterministic Skill archive build/verify/clean-install logic, plus separate gates that validate supplied PPTX visual-QA evidence and publish a verified candidate without clobbering protected inputs. | [release installation](skills/architectural-concept-design/references/release-installation.md) · [release packager](skills/architectural-concept-design/scripts/release_skill_package.py) |
-| Regression and governance provenance | The source-development workflow uses Python evaluations, Node governance tests, strict preflight, repository checks, and GitHub Actions. Those development-only test and governance sources are intentionally absent from this public distribution. | [public-distribution manifest](PUBLIC-DISTRIBUTION-MANIFEST.json) |
+| Release integrity | The repository includes deterministic Skill archive build/verify/clean-install logic, plus separate gates that validate supplied PPTX visual-QA evidence and publish a verified candidate without clobbering protected inputs. | [release installation](skills/architectural-concept-design/references/release-installation.md) · [release packager](skills/architectural-concept-design/scripts/release_skill_package.py) · [visual-QA standard](docs/standards/pptx-visual-qa-evidence.md) · [verified-release standard](docs/standards/verified-pptx-release.md) |
+| Regression and governance checks | Python evaluations, Node governance tests, strict preflight, repository checks, and GitHub Actions are part of the tracked development workflow. | [testing and deployment](docs/standards/testing-and-deployment.md) · [governance tests](tests/governance) · [Skill evaluations](tests/skill/evaluations) |
 
 ## A local, traceable working route
 
-The source-development workflow uses anonymous synthetic fixtures to test the
-chain; they are examples of structure, **not** architectural conclusions to
-reuse, and are intentionally absent from this public distribution. A real
+The repository includes anonymous synthetic fixtures for testing the chain; they
+are examples of structure, **not** architectural conclusions to reuse. A real
 project begins with human-provided material and retains its unknowns.
 
 ```text
@@ -138,11 +135,14 @@ uv run --project skills/architectural-concept-design --frozen --no-sync python \
   skills/architectural-concept-design/scripts/check_area_schedule.py \
   <area-schedule.json>
 
+uv run --project skills/architectural-concept-design --frozen --no-sync pytest \
+  tests/skill/evaluations
 ```
 
-Development-only fixtures and evaluations are intentionally omitted from this
-public distribution; the public package retains the deterministic local
-operations shown above.
+The repository's synthetic examples live in
+[`tests/skill/fixtures`](tests/skill/fixtures). They demonstrate validation and
+traceability only; they are not templates for a real site, code basis,
+procurement decision, or construction package.
 
 ## Architectural specificity
 
@@ -268,17 +268,18 @@ integration.
 ## Project map
 
 ```text
-LICENSE                           # Apache-2.0 text for this public package
-NOTICE                            # public-package notices
-PUBLIC-DISTRIBUTION-MANIFEST.json # deterministic public export record
-
 skills/architectural-concept-design/
 ├── SKILL.md                 # concise workflow and routing
 ├── references/              # contracts, schemas, and architectural guidance
 ├── scripts/                 # deterministic local operations
 ├── assets/                  # packageable local assets
-├── pyproject.toml           # pinned Python runtime metadata (0.1.0)
+├── pyproject.toml           # pinned Python runtime metadata (0.2.0)
 └── uv.lock                  # locked runtime dependencies
+
+tests/skill/                 # fixtures, expected invariants, evaluations
+tests/governance/            # repository and policy checks
+docs/standards/              # product scope, release, QA, and governance rules
+docs/adr/                    # accepted and proposed architectural decisions
 ```
 
 The concise operational entry point is
@@ -288,15 +289,15 @@ README.
 
 ## Development and release discipline
 
-Before a source-development change is considered complete, the development
-workflow expects strict preflight, repository checks, governance tests,
-relevant Skill evaluations, clean diffs, and the applicable review/release
-evidence. Development-only governance documents and test sources are
-intentionally omitted from this public distribution; the retained release
-installation boundary is documented in
+Before a change is considered complete, the repository expects strict
+preflight, repository checks, governance tests, relevant Skill evaluations,
+clean diffs, and the applicable review/release evidence. The exact commands
+and release boundaries are documented in
+[`docs/standards/testing-and-deployment.md`](docs/standards/testing-and-deployment.md)
+and
 [`skills/architectural-concept-design/references/release-installation.md`](skills/architectural-concept-design/references/release-installation.md).
 
-The current repository package metadata is version `0.1.0`. Archive creation,
+The current repository package metadata is version `0.2.0`. Archive creation,
 verification, and clean installation are deterministic local operations; a
 release archive records its source commit, build time, manifest, and per-file
 hashes. See

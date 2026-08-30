@@ -1,0 +1,220 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://architecture-pre-design-skills.local/schemas/student-dimension-plan/1.0.0",
+  "title": "Student Dimension Plan",
+  "description": "A deterministic student dimension plan derived from one confirmed spatial program and one human-confirmed dimension draft. Candidates are human-authored and machine-checked: the builder computes footprint area, area delta, and aspect ratio with exact decimal arithmetic, and selects no candidate. JSON data only: no PPTX, image, HTML, coordinate drawing, or plan drawing.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "plan_kind", "source_binding", "student_view"],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "plan_kind": {"const": "student_dimension_plan"},
+    "source_binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "digest_input_hash",
+        "confirmed_digest_sha256",
+        "pending_digest_sha256",
+        "start_board_sha256",
+        "confirmed_program_draft_sha256",
+        "pending_program_draft_sha256",
+        "confirmed_program_sha256",
+        "pending_dimension_draft_sha256",
+        "confirmed_dimension_draft_sha256"
+      ],
+      "properties": {
+        "digest_input_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "confirmed_digest_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "pending_digest_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "start_board_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "confirmed_program_draft_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "pending_program_draft_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "confirmed_program_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "pending_dimension_draft_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "confirmed_dimension_draft_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    },
+    "student_view": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "project_title",
+        "stage",
+        "spaces_by_zone",
+        "candidate_sets",
+        "deferred_numeric_spaces",
+        "unresolved_area_spaces",
+        "plan_framework",
+        "clarification_questions",
+        "next_action",
+        "boundaries"
+      ],
+      "properties": {
+        "project_title": {"type": "string", "minLength": 1},
+        "stage": {"const": "dimension_candidates_ready_for_human_selection"},
+        "spaces_by_zone": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["zone", "spaces"],
+            "properties": {
+              "zone": {"enum": ["public", "internal_staff", "service_support", "shared", "unresolved"]},
+              "spaces": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["name", "activity_profile", "area_status"],
+                  "properties": {
+                    "name": {"type": "string", "minLength": 1},
+                    "activity_profile": {"enum": ["active", "quiet", "mixed", "unresolved"]},
+                    "area_status": {"enum": ["brief_stated", "human_working", "unresolved"]},
+                    "area_source": {
+                      "enum": ["brief_stated", "human_working"],
+                      "description": "Present only for numeric spaces; brief-stated and human-working areas stay distinct."
+                    },
+                    "area_value_m2": {
+                      "type": "string",
+                      "pattern": "^[0-9]+(\\.[0-9]{1,2})?$",
+                      "description": "Present only for numeric spaces, restated exactly as confirmed."
+                    },
+                    "area_note": {
+                      "type": "string",
+                      "minLength": 1,
+                      "description": "Present only for unresolved-area spaces."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "candidate_sets": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["space_name", "area_source", "confirmed_area_m2", "candidate_count_reason", "candidates"],
+            "properties": {
+              "space_name": {"type": "string", "minLength": 1},
+              "area_source": {"enum": ["brief_stated", "human_working"]},
+              "confirmed_area_m2": {"type": "string", "pattern": "^[0-9]+(\\.[0-9]{1,2})?$"},
+              "candidate_count_reason": {"type": "string", "minLength": 1},
+              "candidates": {
+                "type": "array",
+                "minItems": 2,
+                "maxItems": 6,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "option_key",
+                    "long_side_m",
+                    "short_side_m",
+                    "footprint_area_m2",
+                    "area_delta_m2",
+                    "area_delta_percent",
+                    "aspect_ratio"
+                  ],
+                  "properties": {
+                    "option_key": {"enum": ["A", "B", "C", "D", "E", "F"]},
+                    "long_side_m": {"type": "string", "pattern": "^[0-9]+(\\.[0-9]{1,2})?$"},
+                    "short_side_m": {"type": "string", "pattern": "^[0-9]+(\\.[0-9]{1,2})?$"},
+                    "footprint_area_m2": {"type": "string", "pattern": "^-?[0-9]+(\\.[0-9]+)?$"},
+                    "area_delta_m2": {"type": "string", "pattern": "^-?[0-9]+(\\.[0-9]+)?$"},
+                    "area_delta_percent": {"type": "string", "pattern": "^-?[0-9]+(\\.[0-9]+)?$"},
+                    "aspect_ratio": {"type": "string", "pattern": "^[0-9]+(\\.[0-9]+)?$"},
+                    "human_note": {"type": "string", "minLength": 1}
+                  }
+                }
+              }
+            }
+          }
+        },
+        "deferred_numeric_spaces": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["space_name", "reason"],
+            "properties": {
+              "space_name": {"type": "string", "minLength": 1},
+              "reason": {"type": "string", "minLength": 1}
+            }
+          }
+        },
+        "unresolved_area_spaces": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "note"],
+            "properties": {
+              "name": {"type": "string", "minLength": 1},
+              "note": {"type": "string", "minLength": 1}
+            }
+          }
+        },
+        "plan_framework": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["zones", "relations", "note"],
+          "properties": {
+            "zones": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["zone", "spaces"],
+                "properties": {
+                  "zone": {"enum": ["public", "internal_staff", "service_support", "shared", "unresolved"]},
+                  "spaces": {"type": "array", "items": {"type": "string", "minLength": 1}}
+                }
+              }
+            },
+            "relations": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["from_space", "to_space", "kind", "basis"],
+                "properties": {
+                  "from_space": {"type": "string", "minLength": 1},
+                  "to_space": {"type": "string", "minLength": 1},
+                  "kind": {"enum": ["must_be_near", "prefer_be_near", "must_be_separate", "shared_support"]},
+                  "basis": {"type": "string", "minLength": 1}
+                }
+              }
+            },
+            "note": {
+              "type": "string",
+              "minLength": 1,
+              "description": "States that the framework carries no coordinates, positions, orientations, distances, roads, entrances, floors, or geometric layout."
+            }
+          }
+        },
+        "clarification_questions": {
+          "type": "array",
+          "maxItems": 3,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "next_action": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["action", "description"],
+          "properties": {
+            "action": {"enum": ["resolve_dimension_gaps", "human_select_dimension_candidates"]},
+            "description": {"type": "string", "minLength": 1}
+          }
+        },
+        "boundaries": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 1}
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,178 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://architecture-pre-design-skills.local/schemas/student-hypothesis-comparison-draft/1.0.0",
+  "title": "Student Hypothesis Comparison Draft",
+  "description": "A human-authored comparison draft written over one confirmed student massing, grid, and height hypotheses framework. It carries ordered comparison criteria, one assessment per existing hypothesis, optional non-binding guidance, and at most three clarification questions. The builder only checks coverage, references, and traceability and projects the human text verbatim; it generates no candidate, no criterion, no assessment, and no architectural conclusion, and it selects nothing.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "draft_kind",
+    "source_massing_grid_height_framework_sha256",
+    "criteria",
+    "candidate_assessments",
+    "clarification_questions",
+    "human_confirmation"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "draft_kind": {"const": "student_hypothesis_comparison_draft"},
+    "source_massing_grid_height_framework_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "The canonical JSON plus newline SHA-256 of the complete confirmed massing-grid-height framework this draft answers."
+    },
+    "criteria": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["criterion_id", "name", "description"],
+        "properties": {
+          "criterion_id": {"type": "string", "pattern": "^CR-[0-9]{3,}$"},
+          "name": {"type": "string", "minLength": 1},
+          "description": {"type": "string", "minLength": 1}
+        }
+      },
+      "description": "Ordered human-authored comparison criteria; the array order is the human's priority order. May be empty; empty criteria can never support a single-candidate recommendation."
+    },
+    "candidate_assessments": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 6,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "candidate_key",
+          "applicable_preconditions",
+          "advantages",
+          "costs_or_risks",
+          "reconsider_when",
+          "criterion_judgments"
+        ],
+        "properties": {
+          "candidate_key": {
+            "type": "string",
+            "pattern": "^MGH-[0-9]{3,}$",
+            "description": "One hypothesis_id written by the student in the confirmed massing-grid-height draft; every hypothesis keeps exactly one assessment."
+          },
+          "applicable_preconditions": {
+            "type": "array",
+            "minItems": 1,
+            "items": {"type": "string", "minLength": 1},
+            "description": "Human-written preconditions under which this candidate applies; carried verbatim."
+          },
+          "advantages": {
+            "type": "array",
+            "minItems": 1,
+            "items": {"type": "string", "minLength": 1},
+            "description": "Human-written advantages; carried verbatim, never verified by the machine."
+          },
+          "costs_or_risks": {
+            "type": "array",
+            "minItems": 1,
+            "items": {"type": "string", "minLength": 1},
+            "description": "Human-written costs or risks the candidate would carry; carried verbatim, never verified by the machine."
+          },
+          "reconsider_when": {
+            "type": "array",
+            "minItems": 1,
+            "items": {"type": "string", "minLength": 1},
+            "description": "Human-written conditions under which this candidate should not be chosen or must be reconsidered."
+          },
+          "criterion_judgments": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["criterion_id", "judgment"],
+              "properties": {
+                "criterion_id": {"type": "string", "pattern": "^CR-[0-9]{3,}$"},
+                "judgment": {"type": "string", "minLength": 1}
+              }
+            },
+            "description": "Human-written per-criterion judgments; may be empty. Every criterion_id must exist in criteria."
+          }
+        }
+      }
+    },
+    "clarification_questions": {
+      "type": "array",
+      "maxItems": 3,
+      "items": {"type": "string", "minLength": 1},
+      "description": "At most three human-authored questions, carried verbatim; the builder never adds questions."
+    },
+    "guidance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "focus_candidate_keys",
+        "basis",
+        "basis_criterion_ids",
+        "advantages",
+        "costs_or_risks",
+        "reconsider_when"
+      ],
+      "properties": {
+        "focus_candidate_keys": {
+          "type": "array",
+          "maxItems": 6,
+          "items": {"type": "string", "pattern": "^MGH-[0-9]{3,}$"},
+          "description": "Zero, one, or several candidate keys the human suggests focusing on. Exactly one becomes recommended_to_consider_first; two or more become a suggested_focus list; zero yields no single suggestion. The machine never resolves a tie."
+        },
+        "basis": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Human-written reasoning for the guidance; carried verbatim."
+        },
+        "basis_criterion_ids": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "pattern": "^CR-[0-9]{3,}$"},
+          "description": "The ordered criteria this guidance rests on; every id must exist in criteria, otherwise the guidance is untraceable and the draft fails closed."
+        },
+        "advantages": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 1},
+          "description": "Human-written advantages of following this guidance."
+        },
+        "costs_or_risks": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 1},
+          "description": "Human-written costs or risks of following this guidance."
+        },
+        "reconsider_when": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 1},
+          "description": "Human-written conditions under which this guidance should be discarded or overturned."
+        }
+      }
+    },
+    "human_confirmation": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status"],
+          "properties": {"status": {"const": "pending"}}
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status", "confirmed_by", "confirmed_at", "action", "pending_student_hypothesis_comparison_draft_sha256"],
+          "properties": {
+            "status": {"const": "confirmed"},
+            "confirmed_by": {"type": "string", "minLength": 1},
+            "confirmed_at": {"type": "string"},
+            "action": {"const": "CONFIRM_STUDENT_HYPOTHESIS_COMPARISON_DRAFT"},
+            "pending_student_hypothesis_comparison_draft_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+          }
+        }
+      ]
+    }
+  }
+}

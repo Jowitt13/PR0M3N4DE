@@ -1,0 +1,116 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://architecture-pre-design-skills.local/schemas/student-spatial-transition-state-handoff/1.0.0",
+  "title": "Student Spatial Transition State Handoff",
+  "description": "A closed deterministic handoff projected only after one valid ARCH-110 spatial transition framework without unresolved items and one human continue_to_manual_spatial_design review record. It carries human-written spatial hierarchy and transition intentions only; it does not make or imply a drawing, geometry, site conclusion, architectural decision, performance claim, or PPTX.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "handoff_kind", "source_binding", "student_handoff", "handoff_contract"],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "handoff_kind": {"const": "student_spatial_transition_state_handoff"},
+    "source_binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "spatial_transition_framework_sha256",
+        "review_record_sha256",
+        "review_action",
+        "reviewed_by",
+        "reviewed_at",
+        "review_outcome"
+      ],
+      "properties": {
+        "spatial_transition_framework_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "review_record_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "review_action": {"const": "REVIEW_STUDENT_SPATIAL_TRANSITION_FRAMEWORK"},
+        "reviewed_by": {"type": "string", "minLength": 1},
+        "reviewed_at": {"type": "string", "minLength": 1},
+        "review_outcome": {"const": "continue_to_manual_spatial_design"}
+      }
+    },
+    "student_handoff": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "project_title",
+        "stage",
+        "space_hierarchy",
+        "transition_patterns",
+        "clarification_questions",
+        "review_summary",
+        "next_action",
+        "boundaries_statement"
+      ],
+      "properties": {
+        "project_title": {"type": "string", "minLength": 1},
+        "stage": {"const": "spatial_transition_reviewed_for_handoff"},
+        "space_hierarchy": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["space_name", "role", "note"],
+            "properties": {
+              "space_name": {"type": "string", "minLength": 1},
+              "role": {"enum": ["main_space", "supporting_space", "shared_service"]},
+              "note": {"type": "string", "minLength": 1}
+            }
+          }
+        },
+        "transition_patterns": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["from_space_name", "to_space_name", "transition_kind", "note"],
+            "properties": {
+              "from_space_name": {"type": "string", "minLength": 1},
+              "to_space_name": {"type": "string", "minLength": 1},
+              "transition_kind": {"enum": ["gradual_opening", "gradual_enclosure", "buffered_transition", "interwoven_access", "remain_independent"]},
+              "note": {"type": "string", "minLength": 1}
+            }
+          }
+        },
+        "clarification_questions": {
+          "type": "array",
+          "maxItems": 3,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "review_summary": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["reviewed_by", "reviewed_at", "outcome", "review_notes"],
+          "properties": {
+            "reviewed_by": {"type": "string", "minLength": 1},
+            "reviewed_at": {"type": "string", "minLength": 1},
+            "outcome": {"const": "continue_to_manual_spatial_design"},
+            "review_notes": {"type": "array", "maxItems": 3, "items": {"type": "string", "minLength": 1}}
+          }
+        },
+        "next_action": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["action", "description"],
+          "properties": {
+            "action": {"const": "human_continue_manual_spatial_design"},
+            "description": {"type": "string", "minLength": 1}
+          }
+        },
+        "boundaries_statement": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}}
+      }
+    },
+    "handoff_contract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["confirmed_available", "must_not_infer", "invalidated_by_upstream_change", "prohibited_outputs"],
+      "properties": {
+        "confirmed_available": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+        "must_not_infer": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+        "invalidated_by_upstream_change": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+        "prohibited_outputs": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}}
+      }
+    }
+  }
+}

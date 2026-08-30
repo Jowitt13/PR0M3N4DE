@@ -1,0 +1,186 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://architecture-pre-design-skills.local/schemas/student-plan-framework-draft/1.0.0",
+  "title": "Student Plan Framework Draft",
+  "description": "A human-authored plan relationship and placement draft written over one valid selected hypothesis state package. It carries one readable placement or explicit deferral per confirmed space, a finite set of space pair relations, ordered movement gradients over real spaces or confirmed zones, unresolved plan items, and at most three clarification questions. The builder only checks coverage, references, and traceability and projects the human text verbatim; it generates no placement, relation, sequence, coordinate, or architectural conclusion, and it selects and recommends nothing.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "draft_kind",
+    "source_selected_hypothesis_state_sha256",
+    "placements",
+    "deferred_placements",
+    "relations",
+    "sequences",
+    "unresolved_plan_items",
+    "clarification_questions",
+    "human_confirmation"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "draft_kind": {"const": "student_plan_framework_draft"},
+    "source_selected_hypothesis_state_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "The canonical JSON plus newline SHA-256 of the whole selected hypothesis state package this draft answers."
+    },
+    "placements": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["space_name", "level", "zone", "placement_note"],
+        "properties": {
+          "space_name": {"type": "string", "minLength": 1},
+          "level": {"type": "string", "minLength": 1},
+          "zone": {"type": "string", "minLength": 1},
+          "role": {
+            "enum": ["primary", "secondary", "service"],
+            "description": "Optional human-readable role of the space within this placement."
+          },
+          "placement_note": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Human-written placement note carried verbatim; never a coordinate, dimension, or wall."
+          }
+        }
+      },
+      "description": "Human-written placements; every confirmed space appears exactly once across placements and deferred_placements."
+    },
+    "deferred_placements": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["space_name", "reason"],
+        "properties": {
+          "space_name": {"type": "string", "minLength": 1},
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Explicit human-written reason the placement stays deferred; a deferred space is never also placed."
+          }
+        }
+      },
+      "description": "Spaces whose placement the student leaves undecided, each with an explicit reason."
+    },
+    "relations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["relation_id", "from_space", "to_space", "relation_category", "note"],
+        "properties": {
+          "relation_id": {"type": "string", "pattern": "^PR-[0-9]{3,}$"},
+          "from_space": {"type": "string", "minLength": 1},
+          "to_space": {"type": "string", "minLength": 1},
+          "relation_category": {
+            "enum": ["adjacent", "near", "separate", "buffered_transition", "flexibly_divisible"],
+            "description": "One fixed, explicit relationship category; the machine generates no corridor, wall, door, or geometry."
+          },
+          "note": {"type": "string", "minLength": 1}
+        }
+      },
+      "description": "Human-written space pair relations; the unordered pair is unique, self-loops are invalid, and the pair must not contradict the confirmed spatial program relations."
+    },
+    "sequences": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["sequence_id", "gradient_name", "elements", "note"],
+        "properties": {
+          "sequence_id": {"type": "string", "pattern": "^SQ-[0-9]{3,}$"},
+          "gradient_name": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Human-written gradient label such as active to quiet or open to private."
+          },
+          "elements": {
+            "type": "array",
+            "minItems": 2,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["element_kind", "element_name"],
+              "properties": {
+                "element_kind": {"enum": ["space", "zone"]},
+                "element_name": {"type": "string", "minLength": 1}
+              }
+            }
+          },
+          "note": {"type": "string", "minLength": 1}
+        }
+      },
+      "description": "Ordered human-written movement gradients; the student's order is kept and the machine never sorts, scores, or recommends."
+    },
+    "unresolved_plan_items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["record_id", "subject_kind", "subject_reference", "reason"],
+        "properties": {
+          "record_id": {"type": "string", "pattern": "^UP-[0-9]{3,}$"},
+          "subject_kind": {"enum": ["space_placement", "relation", "sequence"]},
+          "subject_reference": {
+            "oneOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["space_name"],
+                "properties": {"space_name": {"type": "string", "minLength": 1}}
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["from_space", "to_space"],
+                "properties": {
+                  "from_space": {"type": "string", "minLength": 1},
+                  "to_space": {"type": "string", "minLength": 1}
+                }
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["sequence_id"],
+                "properties": {"sequence_id": {"type": "string", "pattern": "^SQ-[0-9]{3,}$"}}
+              }
+            ]
+          },
+          "reason": {"type": "string", "minLength": 1}
+        }
+      },
+      "description": "Placements or relations the student explicitly leaves undecided; every reference must be real and a pair may never be both unresolved and resolved."
+    },
+    "clarification_questions": {
+      "type": "array",
+      "maxItems": 3,
+      "items": {"type": "string", "minLength": 1},
+      "description": "At most three human-authored questions, carried verbatim; the builder never adds questions."
+    },
+    "human_confirmation": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status"],
+          "properties": {"status": {"const": "pending"}}
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status", "confirmed_by", "confirmed_at", "action", "pending_student_plan_framework_draft_sha256"],
+          "properties": {
+            "status": {"const": "confirmed"},
+            "confirmed_by": {"type": "string", "minLength": 1},
+            "confirmed_at": {"type": "string"},
+            "action": {"const": "CONFIRM_STUDENT_PLAN_FRAMEWORK_DRAFT"},
+            "pending_student_plan_framework_draft_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+          }
+        }
+      ]
+    }
+  }
+}
