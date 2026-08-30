@@ -201,7 +201,7 @@ skills/architectural-concept-design/
 ├── references/              # 契约、Schema 与建筑学指导
 ├── scripts/                 # 确定性的本地操作
 ├── assets/                  # 可打包的本地资产
-├── pyproject.toml           # 锁定版本的 Python 运行时元数据（0.1.0）
+├── pyproject.toml           # 锁定版本的 Python 运行时元数据（0.2.0）
 └── uv.lock                  # 锁定的运行时依赖
 ```
 
