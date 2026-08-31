@@ -1,6 +1,6 @@
 # PR0M3N4DE
 
-**[English](README.md)**
+**简体中文 | [English](README.en.md)**
 
 > **一场穿行于建筑推理之中的漫游。**
 
