@@ -21,15 +21,17 @@ real-world claim.
 ## Contract boundary
 
 Use [synthetic-teaching-presentation-handoff.schema.json](synthetic-teaching-presentation-handoff.schema.json)
-and validate the result with:
+(contract 2.0.0) and validate the result with:
 
 ```text
-scripts/validate_synthetic_teaching_presentation_handoff.py <handoff.json>
+scripts/validate_synthetic_teaching_presentation_handoff.py <handoff.json> <human-copy-review.json>
 ```
 
-The handoff is local and versioned. It transfers only validated state hashes,
+The builder requires an explicit `--audience-copy` document (see
+[audience-copy-contract.md](audience-copy-contract.md)) and never invents
+visible copy. The handoff is local and versioned. It transfers only validated state hashes,
 allowed state IDs, the human design decision, the teaching labels, unresolved
-input names, concise team-authored page purposes, and team-original vector
+input names, the explicit audience context and audience-facing page copy, and team-original vector
 diagrams. It must never carry `RC-xxx`, `RCR-xxx`, `SRC-xxx`, `E-xxx`, source
 locators, URLs, third-party media, media authorization, copied source text, or
 `VERIFIED` claims.
@@ -48,6 +50,18 @@ unresolved inputs; and teaching next actions. Every page visibly says
 locked `ppt-master` receipt, authors only local SVG vector pages, and invokes
 the locked exporter. It neither searches, fetches, installs, adds sources,
 changes quantities, resolves unknowns, or changes the human decision.
+
+Each teaching page follows the [SVG dual asset pipeline](svg-dual-asset-pipeline.md):
+the editable source is authored and audited first; text is compiled to glyph
+paths; only the compiled SVG is exported to PPTX. Delivered outputs keep both
+`svg-editable/` and `svg-compiled/` beside the deck. ARCH-122 audience-copy
+rules stay unchanged.
+
+The renderer's visible text comes only from each page's
+`visible_slide_copy` plus the fixed teaching boundary labels. It never
+renders the internal `STP-xx` page locator (the footer shows an ordinary
+page number), internal state IDs, `internal_purpose`, or speaker notes; the
+delivered-deck audit rejects any slide that violates this boundary.
 
 Rendering and structure checks run in a short-path temporary staging area outside the requested
 output directory; only after every check passes are the deck, manifest, and report atomically

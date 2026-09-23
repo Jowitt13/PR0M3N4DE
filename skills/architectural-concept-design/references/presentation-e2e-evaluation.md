@@ -24,14 +24,17 @@ Use the evaluator only after `scripts/validate_state.py validate`, `scripts/vali
 
 ## 1. Evaluation inputs
 
-The evaluator accepts four required local JSON files:
+The evaluator accepts four required local JSON files and one required gate input:
 
 1. schema-valid input brief;
 2. schema-valid output state package;
-3. runtime candidate set; and
-4. presentation handoff.
+3. runtime candidate set;
+4. presentation handoff (contract 2.0.0); and
+5. `--copy-review <human-copy-review.json>` — the explicit human copy review
+   bound to the handoff's audience context and visible copy hashes
+   ([audience-copy-contract.md](audience-copy-contract.md)).
 
-The state package remains the architectural authority. The candidate set remains the candidate-selection authority. The handoff remains an immutable pre-render plan: its `rendering_boundary` must continue to say `EXTERNAL_RENDERER_NOT_INVOKED` and all prohibited action flags must remain `false`.
+The state package remains the architectural authority. The candidate set remains the candidate-selection authority. The handoff remains an immutable pre-render plan: its `rendering_boundary` must continue to say `EXTERNAL_RENDERER_NOT_INVOKED` and all prohibited action flags must remain `false`. A missing gate, a non-`APPROVED` review, a review hash mismatch, an unresolved audience-language finding, or an unsupported public claim fails the evaluation; the evaluator never accepts a deck merely because its JSON exists.
 
 `state_package.input_hash` is checked against ADR-0001 canonical input hashing. `state_package.output_hash` is checked against the evaluator's canonical output serialization: UTF-8 JSON, `ensure_ascii=false`, sorted object keys, compact separators, finite values only, and SHA-256. This gives a deterministic file-content identity without adding a new state-schema field.
 
@@ -73,17 +76,29 @@ Do not pass a third-party image, downloaded media, source page, browser session,
 
 ## 5. Command
 
-```text
-uv run python skills/architectural-concept-design/scripts/evaluate_presentation_e2e.py \
-  <input.json> <output.json> <candidate-set.json> <handoff.json>
-```
+Whenever a PPTX is validated, `--mode` is mandatory. Omitting it is a stable `MODE_REQUIRED` rejection; the evaluator never guesses the delivery intent.
 
-For a supplied, independently rendered deck, add both local paths:
+**Intermediate (teaching/exploration) mode** — the deck is marked `INTERMEDIATE_NOT_FOR_DELIVERY`, can never report `PPTX_VALIDATED`, and must NOT carry freshness inputs (passing them is rejected with `INTERMEDIATE_MODE_REJECTS_FRESHNESS_INPUTS`). Its result is not a deliverable:
 
 ```text
 uv run python skills/architectural-concept-design/scripts/evaluate_presentation_e2e.py \
   <input.json> <output.json> <candidate-set.json> <handoff.json> \
-  --ppt-master-root <installed-ppt-master-directory> --pptx <editable-deck.pptx> --require-pptx
+  --copy-review <human-copy-review.json> \
+  --ppt-master-root <installed-ppt-master-directory> --pptx <editable-deck.pptx> --require-pptx \
+  --mode intermediate
 ```
 
-The command emits one machine-readable JSON result and writes no files.
+**Delivery mode** — runs the full freshness gate. The ledger, freshness receipt, and independent human review receipt are required; a missing input is `DELIVERY_FRESHNESS_RECEIPT_REQUIRED` and any stale bound entry is `DELIVERY_STALE_CONTENT_BLOCKED`:
+
+```text
+uv run python skills/architectural-concept-design/scripts/evaluate_presentation_e2e.py \
+  <input.json> <output.json> <candidate-set.json> <handoff.json> \
+  --copy-review <human-copy-review.json> \
+  --ppt-master-root <installed-ppt-master-directory> --pptx <editable-deck.pptx> --require-pptx \
+  --mode delivery \
+  --data-ledger <design-data-ledger.json> \
+  --freshness-receipt <freshness-receipt.json> \
+  --human-review <design-data-human-review.json>
+```
+
+Without a supplied renderer root and PPTX, the evaluator cross-validates the handoff contracts only and reports `HANDOFF_READY` (delivery mode still requires and verifies the freshness inputs). The command emits one machine-readable JSON result and writes no files.

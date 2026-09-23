@@ -13,6 +13,8 @@ from pathlib import Path
 from typing import Any, Literal, TypedDict
 from xml.etree import ElementTree
 
+import design_data_staleness
+import presentation_usability
 import validate_presentation_handoff
 import validate_runtime_candidates
 import validate_state
@@ -41,8 +43,11 @@ class E2eResult(TypedDict):
     outcome: Literal[
         "HANDOFF_READY",
         "PPTX_VALIDATED",
+        "INTERMEDIATE_PPTX_VALIDATED",
+        "MODE_REQUIRED",
         "RENDERER_DEPENDENCY_UNAVAILABLE",
         "PPTX_VALIDATION_FAILED",
+        "DELIVERY_AUDIT_FAILED",
         "CONTRACT_VALIDATION_FAILED",
     ]
     errors: list[E2eError]
@@ -102,6 +107,7 @@ def _validate_upstream_contracts(
     output_payload: JsonObject,
     candidate_set: JsonObject,
     handoff: JsonObject,
+    copy_review: JsonObject | None,
     errors: list[E2eError],
 ) -> None:
     state_result, _ = validate_state.validate_state(input_payload, output_payload)
@@ -113,8 +119,10 @@ def _validate_upstream_contracts(
     _summarize_upstream(candidate_result, "CANDIDATE_VALIDATION_FAILED", "/candidate_set", errors)
 
     handoff_schema = validate_presentation_handoff.load_json_object(validate_presentation_handoff.SCHEMA_PATH)
-    handoff_result = validate_presentation_handoff.validate_presentation_handoff(handoff, handoff_schema)
+    handoff_result = validate_presentation_handoff.validate_presentation_handoff(handoff, handoff_schema, copy_review)
     _summarize_upstream(handoff_result, "HANDOFF_VALIDATION_FAILED", "/handoff", errors)
+    if not handoff_result.get("audience_ready", False):
+        _error(errors, "PRESENTATION_COPY_REVIEW_REQUIRED", "/handoff", "the handoff is not audience-ready: the audience-copy gate requires a valid audience context and an explicit, hash-bound human copy review")
 
 
 def _candidate_index(candidate_set: JsonObject) -> dict[str, Mapping[str, Any]]:
@@ -345,30 +353,142 @@ def _validate_pptx(pptx_path: Path | None, page_count: int, errors: list[E2eErro
     return not errors
 
 
+def _delivery_freshness_errors(
+    mode: str,
+    freshness_ledger: JsonObject | None,
+    freshness_base_dir: Path | None,
+    freshness_receipt: JsonObject | None,
+    human_review: JsonObject | None,
+    handoff_document: Path | None,
+    output_document: Path | None,
+    output_payload: JsonObject,
+    pptx_path: Path | None,
+    usability_plan: JsonObject | None,
+    usability_review: JsonObject | None,
+    rehearsal_evidence: JsonObject | None,
+    handoff: JsonObject,
+    errors: list[E2eError],
+) -> bool:
+    """ARCH-124 DELIVERY gate: recompute freshness through the shared layer.
+
+    Delivery requires the ledger, the freshness receipt, the independent human
+    review receipt, and the actual handoff document; a missing input or any
+    stale bound entry fails closed. Recomputation always reads the actual
+    files, so a stored verdict can never clear staleness.
+    """
+    missing = [
+        name for name, value in (
+            ("--data-ledger", freshness_ledger),
+            ("ledger base directory", freshness_base_dir),
+            ("--freshness-receipt", freshness_receipt),
+            ("--human-review", human_review),
+            ("handoff document", handoff_document),
+            ("output document", output_document),
+            ("pptx", pptx_path),
+        ) if value is None
+    ]
+    if missing:
+        errors.append({
+            "code": "DELIVERY_FRESHNESS_RECEIPT_REQUIRED",
+            "path": "--data-ledger",
+            "message": f"delivery requires {', '.join(missing)}",
+        })
+        return False
+    deck_sha256 = hashlib.sha256(pptx_path.read_bytes()).hexdigest()
+    ok, freshness_errors, _verdict = design_data_staleness.verify_delivery_freshness(
+        freshness_ledger,
+        freshness_receipt,
+        base_dir=freshness_base_dir,
+        documents={
+            design_data_staleness.HANDOFF_PRESENTATION_ROLE: handoff_document,
+            "state_output": output_document,
+        },
+        state_output=output_payload,
+        human_review=human_review,
+        expected_bindings=[("pptx_deck", deck_sha256)],
+        require_human_review=True,
+        verify_copy_bindings=True,
+    )
+    if not ok:
+        for item in freshness_errors:
+            errors.append({
+                "code": "DELIVERY_STALE_CONTENT_BLOCKED" if item["code"] in {"RECEIPT_NOT_CURRENT", "RECEIPT_BINDING_MISSING"} else "DELIVERY_FRESHNESS_INVALID",
+                "path": item["path"],
+                "message": item["message"],
+            })
+        return False
+    assert mode == "delivery"
+    usability_missing = [
+        name for name, value in (
+            ("--usability-plan", usability_plan),
+            ("--usability-review", usability_review),
+            ("--rehearsal", rehearsal_evidence),
+        ) if value is None
+    ]
+    if usability_missing:
+        errors.append({
+            "code": "USABILITY_EVIDENCE_REQUIRED",
+            "path": "--usability-plan",
+            "message": f"delivery requires {', '.join(usability_missing)}; an intermediate deck is never deliverable",
+        })
+        return False
+    deck_sha256 = hashlib.sha256(pptx_path.read_bytes()).hexdigest()
+    usability_ok, usability_errors, _verdict = presentation_usability.verify_usability_delivery(
+        usability_plan, usability_review, rehearsal_evidence, handoff,
+        expected_deck_sha256=deck_sha256,
+    )
+    if not usability_ok:
+        for item in usability_errors:
+            errors.append({
+                "code": "USABILITY_EVIDENCE_INVALID",
+                "path": item["path"],
+                "message": item["message"],
+            })
+        return False
+    return True
+
+
 def evaluate_presentation_e2e(
     input_payload: JsonObject,
     output_payload: JsonObject,
     candidate_set: JsonObject,
     handoff: JsonObject,
     *,
+    copy_review: JsonObject | None = None,
     renderer_root: Path | None = None,
     pptx_path: Path | None = None,
     require_pptx: bool = False,
     lock_path: Path = LOCK_PATH,
+    mode: str | None = None,
+    freshness_ledger: JsonObject | None = None,
+    freshness_base_dir: Path | None = None,
+    freshness_receipt: JsonObject | None = None,
+    human_review: JsonObject | None = None,
+    handoff_document: Path | None = None,
+    output_document: Path | None = None,
+    usability_plan: JsonObject | None = None,
+    usability_review: JsonObject | None = None,
+    rehearsal_evidence: JsonObject | None = None,
 ) -> E2eResult:
     """Cross-validate local handoff inputs and optionally audit a supplied PPTX."""
 
     errors: list[E2eError] = []
-    _validate_upstream_contracts(input_payload, output_payload, candidate_set, handoff, errors)
+    _validate_upstream_contracts(input_payload, output_payload, candidate_set, handoff, copy_review, errors)
     _validate_selection_transfer(candidate_set, handoff, errors)
     _validate_state_transfer(input_payload, output_payload, handoff, errors)
-    checks = ["state", "runtime_candidates", "presentation_handoff", "cross_package_trace"]
+    checks = ["state", "runtime_candidates", "presentation_handoff", "cross_package_trace", "audience_copy_gate"]
     if errors:
         errors.sort(key=lambda item: (item["path"], item["code"], item["message"]))
         return {"ok": False, "outcome": "CONTRACT_VALIDATION_FAILED", "errors": errors, "checks": checks}
 
     if not require_pptx and renderer_root is None and pptx_path is None:
         return {"ok": True, "outcome": "HANDOFF_READY", "errors": [], "checks": checks}
+
+    involves_deck = bool(require_pptx or renderer_root is not None or pptx_path is not None)
+    if involves_deck and mode not in {"intermediate", "delivery"}:
+        return {"ok": False, "outcome": "MODE_REQUIRED", "errors": [{"code": "MODE_REQUIRED", "path": "--mode", "message": "deck validation requires an explicit mode: intermediate or delivery"}], "checks": checks}
+    if mode == "intermediate" and any(value is not None for value in (freshness_ledger, freshness_receipt, human_review)):
+        return {"ok": False, "outcome": "MODE_REQUIRED", "errors": [{"code": "INTERMEDIATE_MODE_REJECTS_FRESHNESS_INPUTS", "path": "--mode", "message": "intermediate validation must not carry delivery freshness inputs"}], "checks": checks}
 
     receipt_errors: list[E2eError] = []
     if not _validate_renderer_receipt(renderer_root, receipt_errors, lock_path):
@@ -383,6 +503,17 @@ def evaluate_presentation_e2e(
         pptx_errors.sort(key=lambda item: (item["path"], item["code"], item["message"]))
         return {"ok": False, "outcome": "PPTX_VALIDATION_FAILED", "errors": pptx_errors, "checks": checks}
     checks.append("pptx_structure")
+    if mode == "intermediate":
+        checks.append("intermediate_only")
+        return {"ok": True, "outcome": "INTERMEDIATE_PPTX_VALIDATED", "errors": [], "checks": checks}
+    audit_errors: list[E2eError] = []
+    if not _delivery_freshness_errors(
+        mode, freshness_ledger, freshness_base_dir, freshness_receipt, human_review, handoff_document, output_document, output_payload, pptx_path,
+        usability_plan, usability_review, rehearsal_evidence, handoff, audit_errors,
+    ):
+        audit_errors.sort(key=lambda item: (item["path"], item["code"], item["message"]))
+        return {"ok": False, "outcome": "DELIVERY_AUDIT_FAILED", "errors": audit_errors, "checks": checks}
+    checks.append("delivery_freshness")
     return {"ok": True, "outcome": "PPTX_VALIDATED", "errors": [], "checks": checks}
 
 
@@ -403,9 +534,17 @@ def main(argv: Sequence[str]) -> int:
     parser.add_argument("output", type=Path)
     parser.add_argument("candidate_set", type=Path)
     parser.add_argument("handoff", type=Path)
+    parser.add_argument("--copy-review", type=Path, help="explicit human copy review binding the audience context and visible copy hashes")
     parser.add_argument("--ppt-master-root", type=Path)
     parser.add_argument("--pptx", type=Path)
     parser.add_argument("--require-pptx", action="store_true")
+    parser.add_argument("--mode", choices=["intermediate", "delivery"], help="required whenever a PPTX is validated: intermediate decks are INTERMEDIATE_NOT_FOR_DELIVERY; delivery runs the full freshness gate")
+    parser.add_argument("--data-ledger", type=Path, help="ARCH-124 design-data ledger (delivery mode)")
+    parser.add_argument("--freshness-receipt", type=Path, help="freshness receipt matching --data-ledger (delivery mode)")
+    parser.add_argument("--human-review", type=Path, help="independent human design-data review receipt (delivery mode)")
+    parser.add_argument("--usability-plan", type=Path, help="ARCH-125 presentation usability plan (delivery mode)")
+    parser.add_argument("--usability-review", type=Path, help="independent human usability review receipt (delivery mode)")
+    parser.add_argument("--rehearsal", type=Path, help="real rehearsal evidence receipt (delivery mode)")
     arguments = parser.parse_args(argv[1:])
     try:
         result = evaluate_presentation_e2e(
@@ -413,9 +552,20 @@ def main(argv: Sequence[str]) -> int:
             load_json_object(arguments.output),
             load_json_object(arguments.candidate_set),
             load_json_object(arguments.handoff),
+            copy_review=load_json_object(arguments.copy_review) if arguments.copy_review is not None else None,
             renderer_root=arguments.ppt_master_root,
             pptx_path=arguments.pptx,
             require_pptx=arguments.require_pptx,
+            mode=arguments.mode,
+            freshness_ledger=design_data_staleness.load_json_object(arguments.data_ledger) if arguments.data_ledger else None,
+            freshness_base_dir=arguments.data_ledger.resolve().parent if arguments.data_ledger else None,
+            freshness_receipt=design_data_staleness.load_json_object(arguments.freshness_receipt) if arguments.freshness_receipt else None,
+            human_review=design_data_staleness.load_json_object(arguments.human_review) if arguments.human_review else None,
+            handoff_document=arguments.handoff.resolve() if arguments.mode == "delivery" else None,
+            output_document=arguments.output.resolve() if arguments.mode == "delivery" else None,
+            usability_plan=design_data_staleness.load_json_object(arguments.usability_plan) if arguments.usability_plan else None,
+            usability_review=design_data_staleness.load_json_object(arguments.usability_review) if arguments.usability_review else None,
+            rehearsal_evidence=design_data_staleness.load_json_object(arguments.rehearsal) if arguments.rehearsal else None,
         )
     except (OSError, ValueError, json.JSONDecodeError) as error:
         result = _load_failure(str(error))

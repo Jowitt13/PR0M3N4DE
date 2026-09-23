@@ -1,0 +1,270 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://architecture-pre-design-skills.local/schemas/svg-dual-asset-manifest/2.0.0",
+  "title": "SVG Dual Asset Manifest",
+  "description": "Machine-written binding of editable SVG source, compiled SVG, preview PNG, fonts, renderers, and computed checks. Caller-supplied pass flags are forbidden.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract_version",
+    "diagram_id",
+    "page_role",
+    "canvas",
+    "scale_semantics",
+    "assets",
+    "compiler",
+    "fonts",
+    "renderers",
+    "cross_renderer",
+    "checks",
+    "forbidden_content",
+    "delivered_qa_images"
+  ],
+  "properties": {
+    "contract_version": {"const": "2.0.0"},
+    "diagram_id": {"type": "string", "minLength": 1},
+    "page_role": {
+      "type": "string",
+      "enum": ["cover", "content", "legend", "appendix", "other"]
+    },
+    "canvas": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["width", "height", "view_box", "aspect_ratio", "preserve_aspect_ratio"],
+      "properties": {
+        "width": {"type": "number", "exclusiveMinimum": 0},
+        "height": {"type": "number", "exclusiveMinimum": 0},
+        "view_box": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4,
+          "items": {"type": "number"}
+        },
+        "aspect_ratio": {"type": "number", "exclusiveMinimum": 0},
+        "preserve_aspect_ratio": {"type": "string", "minLength": 1}
+      }
+    },
+    "scale_semantics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "visible_on_face"],
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": ["not_applicable", "not_to_scale", "declared_scale"]
+        },
+        "visible_on_face": {"type": "boolean"},
+        "declared_scale": {"type": "string", "minLength": 1},
+        "unit": {"type": "string", "minLength": 1},
+        "source": {"type": "string", "minLength": 1}
+      }
+    },
+    "assets": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["editable", "compiled", "preview"],
+      "properties": {
+        "editable": {"$ref": "#/$defs/AssetRef"},
+        "compiled": {"$ref": "#/$defs/AssetRef"},
+        "preview": {"$ref": "#/$defs/PreviewRef"}
+      }
+    },
+    "source_compiled_binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_sha256", "compiled_sha256", "text_runs_compiled"],
+      "properties": {
+        "source_sha256": {"$ref": "#/$defs/Sha256"},
+        "compiled_sha256": {"$ref": "#/$defs/Sha256"},
+        "text_runs_compiled": {"type": "integer", "minimum": 0}
+      }
+    },
+    "compiler": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "version", "backend"],
+      "properties": {
+        "id": {"const": "svg_text_to_path"},
+        "version": {"type": "string", "minLength": 1},
+        "backend": {"const": "pure_python_truetype_glyf"}
+      }
+    },
+    "fonts": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/FontRecord"}
+    },
+    "renderers": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["chrome", "powerpoint_compatible"],
+      "properties": {
+        "chrome": {"$ref": "#/$defs/RendererRecord"},
+        "powerpoint_compatible": {"$ref": "#/$defs/RendererRecord"}
+      }
+    },
+    "cross_renderer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ok", "method", "thresholds", "metrics"],
+      "properties": {
+        "ok": {"type": "boolean"},
+        "method": {"type": "string", "minLength": 1},
+        "thresholds": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["max_mean_abs_diff", "max_bbox_shift_ratio", "min_ink_overlap_ratio"],
+          "properties": {
+            "max_mean_abs_diff": {"type": "number", "minimum": 0},
+            "max_bbox_shift_ratio": {"type": "number", "minimum": 0},
+            "min_ink_overlap_ratio": {"type": "number", "minimum": 0, "maximum": 1}
+          }
+        },
+        "metrics": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["mean_abs_diff", "bbox_shift_ratio", "ink_overlap_ratio", "chrome_png_sha256", "powerpoint_png_sha256"],
+          "properties": {
+            "mean_abs_diff": {"type": "number", "minimum": 0},
+            "bbox_shift_ratio": {"type": "number", "minimum": 0},
+            "ink_overlap_ratio": {"type": "number", "minimum": 0, "maximum": 1},
+            "chrome_png_sha256": {"$ref": "#/$defs/Sha256OrNull"},
+            "powerpoint_png_sha256": {"$ref": "#/$defs/Sha256OrNull"}
+          }
+        }
+      }
+    },
+    "checks": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_audit",
+        "compiled_audit",
+        "preview_ok",
+        "min_font_size_ok",
+        "min_line_width_ok",
+        "text_overflow_ok",
+        "collision_ok",
+        "clipping_ok",
+        "external_reference_free",
+        "compiled_text_free",
+        "hash_binding_ok",
+        "cross_renderer_ok",
+        "asset_visual_delivery_ready"
+      ],
+      "properties": {
+        "source_audit": {"type": "boolean"},
+        "compiled_audit": {"type": "boolean"},
+        "preview_ok": {"type": "boolean"},
+        "min_font_size_ok": {"type": "boolean"},
+        "min_line_width_ok": {"type": "boolean"},
+        "text_overflow_ok": {"type": "boolean"},
+        "collision_ok": {"type": "boolean"},
+        "clipping_ok": {"type": "boolean"},
+        "external_reference_free": {"type": "boolean"},
+        "compiled_text_free": {"type": "boolean"},
+        "hash_binding_ok": {"type": "boolean"},
+        "cross_renderer_ok": {"type": "boolean"},
+        "asset_visual_delivery_ready": {
+          "type": "boolean",
+          "description": "Asset-level visual readiness of this SVG four-asset set only: true when the byte hash binding, the preview render and the declared cross-renderer visual comparison all hold. It is not a deck, package or client claim. It does not assert that a PPTX consumes this SVG, that a client keeps the SVG bytes or the svgBlip relation when it saves, that a saved presentation round-trips with editable vectors, that any office client is compatible, or that a human pilot passed. Skipping the second client leaves it false."
+        }
+      }
+    },
+    "forbidden_content": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["external_href", "bitmap", "foreign_object", "script", "event_handler", "remote_font"],
+      "properties": {
+        "external_href": {"type": "boolean"},
+        "bitmap": {"type": "boolean"},
+        "foreign_object": {"type": "boolean"},
+        "script": {"type": "boolean"},
+        "event_handler": {"type": "boolean"},
+        "remote_font": {"type": "boolean"}
+      }
+    },
+    "delivered_qa_images": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["label", "sha256", "delivered"],
+        "properties": {
+          "label": {"type": "string", "minLength": 1},
+          "sha256": {"$ref": "#/$defs/Sha256OrNull"},
+          "delivered": {"type": "boolean"},
+          "purpose": {"type": "string", "minLength": 1}
+        }
+      }
+    }
+  },
+  "$defs": {
+    "Sha256": {
+      "description": "A real 64-character lowercase hexadecimal SHA-256. Sixty-four zeros is a placeholder and is never a legal hash, so it is rejected structurally rather than by convention.",
+      "allOf": [
+        {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        {"not": {"const": "0000000000000000000000000000000000000000000000000000000000000000"}}
+      ]
+    },
+    "Sha256OrNull": {
+      "description": "A real SHA-256 of the bytes, or null when the asset does not exist. An all-zero placeholder is never a legal value.",
+      "oneOf": [
+        {"$ref": "#/$defs/Sha256"},
+        {"type": "null"}
+      ]
+    },
+    "RelativePath": {
+      "type": "string",
+      "pattern": "^(?![A-Za-z]:)(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))[A-Za-z0-9._/-]+$"
+    },
+    "AssetRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["relative_path", "sha256"],
+      "properties": {
+        "relative_path": {"$ref": "#/$defs/RelativePath"},
+        "sha256": {"$ref": "#/$defs/Sha256"}
+      }
+    },
+    "PreviewRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["relative_path", "sha256", "width", "height"],
+      "properties": {
+        "relative_path": {"$ref": "#/$defs/RelativePath"},
+        "sha256": {"$ref": "#/$defs/Sha256OrNull"},
+        "width": {"type": "integer", "minimum": 1},
+        "height": {"type": "integer", "minimum": 1}
+      }
+    },
+    "FontRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["family", "file_name", "source_class", "available"],
+      "properties": {
+        "family": {"type": "string", "minLength": 1},
+        "file_name": {"type": "string", "minLength": 1},
+        "source_class": {"const": "system"},
+        "available": {"type": "boolean"},
+        "units_per_em": {"type": "integer", "minimum": 1},
+        "file_sha256_prefix": {"type": "string", "pattern": "^[a-f0-9]{16,64}$"}
+      }
+    },
+    "RendererRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "available", "ok"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "version": {"type": "string", "minLength": 1},
+        "available": {"type": "boolean"},
+        "ok": {"type": "boolean"},
+        "png_sha256": {"$ref": "#/$defs/Sha256"},
+        "width": {"type": "integer", "minimum": 1},
+        "height": {"type": "integer", "minimum": 1},
+        "notes": {"type": "string"}
+      }
+    }
+  }
+}

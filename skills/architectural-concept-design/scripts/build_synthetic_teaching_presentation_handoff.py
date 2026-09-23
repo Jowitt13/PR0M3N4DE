@@ -16,6 +16,7 @@ if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 
 import validate_state  # noqa: E402
+from presentation_audience_copy import validate_audience_copy_document  # noqa: E402
 from validate_synthetic_teaching_presentation_handoff import (  # noqa: E402
     SCHEMA_PATH,
     TEACHING_LABELS,
@@ -168,15 +169,17 @@ def _select_human_decision(output_payload: JsonObject, errors: list[BuildError])
     return decision
 
 
-def _page(page_id: str, title: str, purpose: str, required_state_ids: list[str]) -> JsonObject:
+def _page(page_id: str, internal_purpose: str, required_state_ids: list[str], audience_page: Mapping[str, Any]) -> JsonObject:
+    copy = audience_page.get("visible_slide_copy") if isinstance(audience_page.get("visible_slide_copy"), Mapping) else {}
+    notes = audience_page.get("speaker_notes") if isinstance(audience_page.get("speaker_notes"), Mapping) else {}
     return {
         "page_id": page_id,
-        "title": title,
-        "purpose": purpose,
+        "internal_purpose": internal_purpose,
         "required_state_ids": required_state_ids,
         "visible_teaching_notice": "TEACHING DEMO — NOT A REAL PROJECT VALIDATION",
+        "visible_slide_copy": dict(copy),
+        "speaker_notes": dict(notes),
         "visual_strategy": "team_original_vector_diagram_only",
-        "speaker_note": "仅用于教学演示；不构成真实项目、法规、可建性或生产验证结论。",
     }
 
 
@@ -184,6 +187,7 @@ def build_synthetic_teaching_presentation_handoff(
     input_payload: JsonObject,
     output_payload: JsonObject,
     confirmation: JsonObject,
+    audience_copy: JsonObject,
     handoff_id: str,
     validated_at: str,
     schema: JsonObject,
@@ -191,6 +195,11 @@ def build_synthetic_teaching_presentation_handoff(
     """Build a no-precedent handoff or fail closed without partial output."""
 
     errors = _confirmation_errors(confirmation)
+    copy_context, copy_pages, copy_claims = validate_audience_copy_document(
+        audience_copy,
+        tuple(f"STP-{index:02d}" for index in range(1, 9)),
+        errors,
+    )
     state_result, _ = validate_state.validate_state(input_payload, output_payload)
     if not state_result["ok"]:
         _error(errors, "SYNTHETIC_STATE_VALIDATION_FAILED", "/state_package", "input and output must pass validate_state before presentation transfer")
@@ -220,8 +229,12 @@ def build_synthetic_teaching_presentation_handoff(
     assert project is not None and isinstance(project_id, str) and decision is not None
     chosen_option_id = cast(str, decision["chosen_option_id"])
     decision_id = cast(str, decision["id"])
+
+    def audience_page(page_id: str) -> Mapping[str, Any]:
+        return copy_pages.get(page_id, {})
+
     handoff: JsonObject = {
-        "contract_version": "1.0.0",
+        "contract_version": "2.0.0",
         "mode": "SYNTHETIC_NO_PRECEDENT_DEMO",
         "handoff_id": handoff_id,
         "project_id": project_id,
@@ -252,16 +265,18 @@ def build_synthetic_teaching_presentation_handoff(
             "hypotheses": teaching_hypotheses,
         },
         "deck_framework": [
-            _page("STP-01", "合成教学演示", "确认本页仅为假设教学展示。", [decision_id]),
-            _page("STP-02", "假设任务书", "呈现人类授权的教学输入与其边界。", [constraints[0]]),
-            _page("STP-03", "功能清单", "呈现已在人类输入中给出的功能组织。", spaces),
-            _page("STP-04", "空间关系", "呈现已验证状态中的假设关系，不作技术推断。", [constraints[0], *(relations[:1] or spaces[:1])]),
-            _page("STP-05", "概念方向", "并列呈现已记录的多个方向，不重新评分。", options),
-            _page("STP-06", "人类已选方向", "呈现已经由人类选择并写入状态包的方向。", [decision_id, chosen_option_id, hypotheses[0]]),
-            _page("STP-07", "仍待确认", "保留预算、时间与法规相关未知项。", [criteria[0]]),
-            _page("STP-08", "教学下一步", "说明本次产物只验证本地教学链路。", [decision_id, criteria[0]]),
+            _page("STP-01", "确认本页仅为假设教学展示。", [decision_id], audience_page("STP-01")),
+            _page("STP-02", "呈现人类授权的教学输入与其边界。", [constraints[0]], audience_page("STP-02")),
+            _page("STP-03", "呈现已在人类输入中给出的功能组织。", spaces, audience_page("STP-03")),
+            _page("STP-04", "呈现已验证状态中的假设关系，不作技术推断。", [constraints[0], *(relations[:1] or spaces[:1])], audience_page("STP-04")),
+            _page("STP-05", "并列呈现已记录的多个方向，不重新评分。", options, audience_page("STP-05")),
+            _page("STP-06", "呈现已经由人类选择并写入状态包的方向。", [decision_id, chosen_option_id, hypotheses[0]], audience_page("STP-06")),
+            _page("STP-07", "保留预算、时间与法规相关未知项。", [criteria[0]], audience_page("STP-07")),
+            _page("STP-08", "说明本次产物只验证本地教学链路。", [decision_id, criteria[0]], audience_page("STP-08")),
         ],
         "local_assets": [],
+        "audience_context": copy_context,
+        "public_claims": copy_claims,
         "rendering_boundary": {
             "renderer_name": "ppt-master",
             "network_accessed": False,
@@ -271,7 +286,7 @@ def build_synthetic_teaching_presentation_handoff(
             "rendering_authority": "validated_synthetic_handoff_and_team_original_vector_diagrams_only",
         },
     }
-    semantic = validate_synthetic_teaching_presentation_handoff(handoff, schema)
+    semantic = validate_synthetic_teaching_presentation_handoff(handoff, schema, enforce_audience_gate=False)
     if not semantic["ok"]:
         converted = [{"code": item["code"], "path": item["path"], "message": item["message"]} for item in semantic["errors"]]
         return None, {"ok": False, "outcome": "SYNTHETIC_HANDOFF_BUILD_FAILED", "errors": converted}
@@ -302,6 +317,7 @@ def main(argv: Sequence[str]) -> int:
     parser.add_argument("input_state", type=Path)
     parser.add_argument("output_state", type=Path)
     parser.add_argument("confirmation", type=Path)
+    parser.add_argument("--audience-copy", type=Path, required=True, help="explicit audience context and per-page visible copy; the builder never invents visible copy")
     parser.add_argument("--handoff-id", required=True)
     parser.add_argument("--validated-at", required=True)
     parser.add_argument("--output", type=Path, required=True)
@@ -311,6 +327,7 @@ def main(argv: Sequence[str]) -> int:
             load_json_object(arguments.input_state),
             load_json_object(arguments.output_state),
             load_json_object(arguments.confirmation),
+            load_json_object(arguments.audience_copy),
             arguments.handoff_id,
             arguments.validated_at,
             load_json_object(SCHEMA_PATH),

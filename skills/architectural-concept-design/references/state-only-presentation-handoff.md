@@ -27,7 +27,12 @@ under ADR-0005; it does not loosen the ordinary
 ## Required input and validation
 
 Run `scripts/build_state_only_presentation_handoff.py` only with an input/output
-pair that passes `validate_state.py`. The builder refuses stale state, absent
+pair that passes `validate_state.py`, plus an explicit `--audience-copy`
+document (see [audience-copy-contract.md](audience-copy-contract.md)) that
+supplies the audience context and every page's visible copy and speaker
+notes. The builder never invents visible copy from `purpose` fields or state
+descriptions; with a missing or page-incomplete audience-copy document it
+fails closed. The builder refuses stale state, absent
 evidence/constraints/spaces/hypotheses/options/criteria/deliverables, an absent
 or non-human explicit decision, a decision that does not resolve to a state
 option and criteria, or a malformed timestamp. It computes state hashes itself;
@@ -35,10 +40,14 @@ callers do not supply them.
 
 The output must conform to
 [state-only-presentation-handoff.schema.json](state-only-presentation-handoff.schema.json)
-and pass `scripts/validate_state_only_presentation_handoff.py`. Its ten pages
-are fixed as `SOP-01` through `SOP-10`, and each must visibly state:
+(contract 2.0.0) and pass
+`scripts/validate_state_only_presentation_handoff.py <handoff.json> <human-copy-review.json>`.
+Its ten pages are fixed as `SOP-01` through `SOP-10`, and each must visibly state:
 
 `STATE-ONLY HANDOFF — NO EXTERNAL PRECEDENT OR THIRD-PARTY MEDIA`
+
+Without an `APPROVED`, hash-bound human copy review the handoff is not
+audience-ready and fails closed.
 
 Use `team_original_diagram_only` as the only visual strategy. `local_assets`
 may be empty. If non-empty, every record must be a safe relative local path,

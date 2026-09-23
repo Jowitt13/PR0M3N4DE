@@ -18,6 +18,7 @@ except ImportError:  # pragma: no cover - incomplete local environment only.
 
 from _human_record import is_human_record_label
 from _rfc3339 import is_rfc3339_datetime
+from presentation_audience_copy import audience_readiness_errors
 
 JsonObject = Mapping[str, Any]
 SCHEMA_PATH = Path(__file__).resolve().parents[1] / "references" / "state-only-presentation-handoff.schema.json"
@@ -47,6 +48,7 @@ class HandoffError(TypedDict):
 class HandoffResult(TypedDict):
     ok: bool
     handoff_id: str | None
+    audience_ready: bool
     errors: list[HandoffError]
 
 
@@ -206,8 +208,19 @@ def _validate_boundary_and_text(handoff: JsonObject, errors: list[HandoffError])
         _error(errors, "EXTERNAL_PRECEDENT_CONTENT_FORBIDDEN", "", "state-only handoff must not contain URLs, RC/RCR/SRC IDs, or VERIFIED claims")
 
 
-def validate_state_only_presentation_handoff(handoff: JsonObject, schema: JsonObject) -> HandoffResult:
-    """Return a deterministic validation result and never render or mutate files."""
+def validate_state_only_presentation_handoff(
+    handoff: JsonObject,
+    schema: JsonObject,
+    copy_review: JsonObject | None = None,
+    enforce_audience_gate: bool = True,
+) -> HandoffResult:
+    """Return a deterministic validation result and never render or mutate files.
+
+    Contract 2.0.0 adds the shared four-layer audience-copy gate: without a
+    valid audience context and an explicit, hash-bound human copy review the
+    handoff is not audience-ready and fails closed. Builders pass
+    ``enforce_audience_gate=False``; every final-validation path keeps it on.
+    """
 
     errors = _schema_errors(handoff, schema)
     chain_ids = _chain_ids(handoff, errors)
@@ -215,19 +228,28 @@ def validate_state_only_presentation_handoff(handoff: JsonObject, schema: JsonOb
     _validate_pages(handoff, chain_ids, errors)
     _validate_assets(handoff, chain_ids, errors)
     _validate_boundary_and_text(handoff, errors)
+    audience_ready = False
+    if enforce_audience_gate and not any(item["code"] in {"SCHEMA_VALIDATION_FAILED", "VALIDATOR_UNAVAILABLE", "SCHEMA_INVALID"} for item in errors):
+        deck_framework = handoff.get("deck_framework")
+        pages = [page for page in deck_framework if isinstance(page, Mapping)] if isinstance(deck_framework, list) else []
+        gate_errors = audience_readiness_errors(pages, handoff.get("audience_context"), handoff.get("public_claims", []), copy_review, chain_ids)
+        errors.extend({"code": item["code"], "path": item["path"], "message": item["message"]} for item in gate_errors)
+        audience_ready = not gate_errors
     errors.sort(key=lambda item: (item["path"], item["code"], item["message"]))
     handoff_id = handoff.get("handoff_id") if isinstance(handoff.get("handoff_id"), str) else None
-    return {"ok": not errors, "handoff_id": handoff_id, "errors": errors}
+    return {"ok": not errors, "handoff_id": handoff_id, "audience_ready": audience_ready, "errors": errors}
 
 
 def main(argv: Sequence[str]) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("handoff", type=Path)
+    parser.add_argument("copy_review", type=Path, nargs="?", default=None, help="explicit human copy review binding the audience context and visible copy hashes")
     arguments = parser.parse_args(argv[1:])
     try:
-        result = validate_state_only_presentation_handoff(load_json_object(arguments.handoff), load_json_object(SCHEMA_PATH))
+        review = load_json_object(arguments.copy_review) if arguments.copy_review is not None else None
+        result = validate_state_only_presentation_handoff(load_json_object(arguments.handoff), load_json_object(SCHEMA_PATH), review)
     except (OSError, ValueError, TypeError, json.JSONDecodeError) as error:
-        result = {"ok": False, "handoff_id": None, "errors": [{"code": "LOCAL_AUTHORITY_LOAD_FAILED", "path": "", "message": str(error)}]}
+        result = {"ok": False, "handoff_id": None, "audience_ready": False, "errors": [{"code": "LOCAL_AUTHORITY_LOAD_FAILED", "path": "", "message": str(error)}]}
     print(json.dumps(result, ensure_ascii=False, sort_keys=True, separators=(",", ":")))
     return 0 if result["ok"] else 1
 

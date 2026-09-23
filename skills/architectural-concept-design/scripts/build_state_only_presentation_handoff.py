@@ -19,7 +19,9 @@ if str(SCRIPTS) not in sys.path:
 import validate_state  # noqa: E402
 from _human_record import is_human_record_label  # noqa: E402
 from _rfc3339 import is_rfc3339_datetime  # noqa: E402
+from presentation_audience_copy import validate_audience_copy_document  # noqa: E402
 from validate_state_only_presentation_handoff import (  # noqa: E402
+    PAGE_IDS,
     SCHEMA_PATH,
     canonical_sha256,
     load_json_object,
@@ -88,21 +90,29 @@ def _select_decision(output_payload: JsonObject, errors: list[BuildError]) -> Ma
     return decision
 
 
-def _page(page_id: str, title: str, purpose: str, state_ids: list[str]) -> JsonObject:
+def _page(
+    page_id: str,
+    internal_purpose: str,
+    state_ids: list[str],
+    audience_page: Mapping[str, Any],
+) -> JsonObject:
+    copy = audience_page.get("visible_slide_copy") if isinstance(audience_page.get("visible_slide_copy"), Mapping) else {}
+    notes = audience_page.get("speaker_notes") if isinstance(audience_page.get("speaker_notes"), Mapping) else {}
     return {
         "page_id": page_id,
-        "title": title,
-        "purpose": purpose,
+        "internal_purpose": internal_purpose,
         "required_state_ids": state_ids,
         "visible_state_only_notice": "STATE-ONLY HANDOFF — NO EXTERNAL PRECEDENT OR THIRD-PARTY MEDIA",
+        "visible_slide_copy": dict(copy),
+        "speaker_notes": dict(notes),
         "visual_strategy": "team_original_diagram_only",
-        "speaker_note": "Use only the validated project state and team-original diagrams; preserve unresolved items for human review.",
     }
 
 
 def build_state_only_presentation_handoff(
     input_payload: JsonObject,
     output_payload: JsonObject,
+    audience_copy: JsonObject,
     handoff_id: str,
     validated_at: str,
     schema: JsonObject,
@@ -110,6 +120,7 @@ def build_state_only_presentation_handoff(
     """Build one bounded real-project handoff, or fail closed without partial output."""
 
     errors: list[BuildError] = []
+    copy_context, copy_pages, copy_claims = validate_audience_copy_document(audience_copy, PAGE_IDS, errors)
     state_result, _ = validate_state.validate_state(input_payload, output_payload)
     if not state_result["ok"]:
         _error(errors, "STATE_VALIDATION_FAILED", "/state_package", "input and output must pass validate_state before this transfer")
@@ -149,8 +160,12 @@ def build_state_only_presentation_handoff(
     decision_id = decision["id"]
     chosen_option_id = decision["chosen_option_id"]
     criteria_ids = [item for item in decision["criteria_ids"] if isinstance(item, str)]
+
+    def audience_page(page_id: str) -> Mapping[str, Any]:
+        return copy_pages.get(page_id, {})
+
     handoff: JsonObject = {
-        "contract_version": "1.0.0",
+        "contract_version": "2.0.0",
         "mode": "STATE_ONLY_TEAM_ORIGINAL",
         "handoff_id": handoff_id,
         "project_id": output_payload["project_id"],
@@ -166,18 +181,20 @@ def build_state_only_presentation_handoff(
         },
         "architectural_chain": collections,
         "deck_framework": [
-            _page("SOP-01", "Selected direction", "Record the explicit human design selection.", [decision_id, chosen_option_id]),
-            _page("SOP-02", "Brief evidence", "Frame the supplied project evidence without external transfer.", [collections["evidence_ids"][0]]),
-            _page("SOP-03", "Site constraints", "Frame the state-recorded constraints and open questions.", [collections["constraint_ids"][0]]),
-            _page("SOP-04", "Program and relations", "Show supplied program relationships as team-original diagrams.", [collections["space_ids"][0], *(collections["relation_ids"][:1])]),
-            _page("SOP-05", "Working hypotheses", "Keep hypotheses conditional and traceable.", [collections["hypothesis_ids"][0]]),
-            _page("SOP-06", "Options and criteria", "Compare existing state options against recorded criteria.", [collections["option_ids"][0], collections["criterion_ids"][0]]),
-            _page("SOP-07", "Human-selected option", "Carry the human selection without adding a new decision.", [decision_id, chosen_option_id, criteria_ids[0]]),
-            _page("SOP-08", "Team-original deliverable", "Request only the state-recorded team-original deliverable.", [collections["deliverable_ids"][0]]),
-            _page("SOP-09", "Risks and next checks", "Retain evidence and hypotheses requiring later validation.", [collections["evidence_ids"][0], collections["hypothesis_ids"][0]]),
-            _page("SOP-10", "Handoff boundary", "State what remains for human and specialist review.", [decision_id, collections["deliverable_ids"][0]]),
+            _page("SOP-01", "Record the explicit human design selection.", [decision_id, chosen_option_id], audience_page("SOP-01")),
+            _page("SOP-02", "Frame the supplied project evidence without external transfer.", [collections["evidence_ids"][0]], audience_page("SOP-02")),
+            _page("SOP-03", "Frame the state-recorded constraints and open questions.", [collections["constraint_ids"][0]], audience_page("SOP-03")),
+            _page("SOP-04", "Show supplied program relationships as team-original diagrams.", [collections["space_ids"][0], *(collections["relation_ids"][:1])], audience_page("SOP-04")),
+            _page("SOP-05", "Keep hypotheses conditional and traceable.", [collections["hypothesis_ids"][0]], audience_page("SOP-05")),
+            _page("SOP-06", "Compare existing state options against recorded criteria.", [collections["option_ids"][0], collections["criterion_ids"][0]], audience_page("SOP-06")),
+            _page("SOP-07", "Carry the human selection without adding a new decision.", [decision_id, chosen_option_id, criteria_ids[0]], audience_page("SOP-07")),
+            _page("SOP-08", "Request only the state-recorded team-original deliverable.", [collections["deliverable_ids"][0]], audience_page("SOP-08")),
+            _page("SOP-09", "Retain evidence and hypotheses requiring later validation.", [collections["evidence_ids"][0], collections["hypothesis_ids"][0]], audience_page("SOP-09")),
+            _page("SOP-10", "State what remains for human and specialist review.", [decision_id, collections["deliverable_ids"][0]], audience_page("SOP-10")),
         ],
         "local_assets": [],
+        "audience_context": copy_context,
+        "public_claims": copy_claims,
         "rendering_boundary": {
             "renderer_name": "ppt-master",
             "renderer_invoked": False,
@@ -187,7 +204,7 @@ def build_state_only_presentation_handoff(
             "pptx_generated": False,
         },
     }
-    result = validate_state_only_presentation_handoff(handoff, schema)
+    result = validate_state_only_presentation_handoff(handoff, schema, enforce_audience_gate=False)
     if not result["ok"]:
         return None, {"ok": False, "outcome": "STATE_ONLY_HANDOFF_BUILD_FAILED", "errors": result["errors"]}
     return handoff, {"ok": True, "outcome": "STATE_ONLY_HANDOFF_BUILT", "errors": []}
@@ -214,13 +231,19 @@ def main(argv: Sequence[str]) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("input_state", type=Path)
     parser.add_argument("output_state", type=Path)
+    parser.add_argument("--audience-copy", type=Path, required=True, help="explicit audience context and per-page visible copy; the builder never invents visible copy")
     parser.add_argument("--handoff-id", required=True)
     parser.add_argument("--validated-at", required=True)
     parser.add_argument("--output", type=Path, required=True)
     arguments = parser.parse_args(argv[1:])
     try:
         handoff, result = build_state_only_presentation_handoff(
-            load_json_object(arguments.input_state), load_json_object(arguments.output_state), arguments.handoff_id, arguments.validated_at, load_json_object(SCHEMA_PATH)
+            load_json_object(arguments.input_state),
+            load_json_object(arguments.output_state),
+            load_json_object(arguments.audience_copy),
+            arguments.handoff_id,
+            arguments.validated_at,
+            load_json_object(SCHEMA_PATH),
         )
         if handoff is not None:
             _atomic_write_json(arguments.output, handoff)
