@@ -1,0 +1,282 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://architecture-pre-design-skills.local/schemas/design-data-maturity/2.0.0",
+  "title": "Design Data Maturity and Staleness Ledger",
+  "description": "Central, machine-checked registry binding key design data to actual source documents, maturity, public wording, copy slots, and downstream artifacts. Freshness is never stored; it is recomputed from actual files by scripts/design_data_staleness.py. The v2 contract removes caller-authoritative artifact input hashes and the inline human freeze reference: data binds to actual documents through JSON pointers, artifacts bind to builder-owned provenance sidecars, and human freeze/review lives in the separate design-data-human-review schema.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract_version",
+    "project_id",
+    "data_records",
+    "artifacts",
+    "copy_bindings"
+  ],
+  "properties": {
+    "contract_version": {"const": "2.0.0"},
+    "project_id": {"type": "string", "minLength": 1},
+    "data_records": {"type": "array", "items": {"$ref": "#/$defs/DataRecord"}},
+    "artifacts": {"type": "array", "items": {"$ref": "#/$defs/ArtifactRecord"}},
+    "copy_bindings": {"type": "array", "items": {"$ref": "#/$defs/CopyBinding"}},
+    "change_events": {"type": "array", "items": {"$ref": "#/$defs/ChangeEvent"}}
+  },
+  "$defs": {
+    "Sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "DataId": {"type": "string", "pattern": "^DD-[0-9]{3,}$"},
+    "ArtifactId": {"type": "string", "pattern": "^ART-[0-9]{3,}$"},
+    "EvidenceId": {"type": "string", "pattern": "^E-[0-9]{3,}$"},
+    "JsonPointer": {
+      "type": "string",
+      "pattern": "^(?:/(?:[^~]|~0|~1)+)+$",
+      "description": "RFC 6901 JSON Pointer into the bound actual document."
+    },
+    "RelativePath": {
+      "type": "string",
+      "pattern": "^(?![A-Za-z]:)(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))[A-Za-z0-9._/-]+$"
+    },
+    "Maturity": {
+      "type": "string",
+      "enum": ["UNRESOLVED", "WORKING", "COORDINATED", "FROZEN_FOR_DELIVERY"],
+      "description": "Closed design maturity lifecycle. Evidence labels (PROVIDED/VERIFIED/INFERRED/ASSUMED/PROPOSED) are a different axis and forbidden here."
+    },
+    "PublicWording": {
+      "type": "string",
+      "enum": ["NOT_PUBLIC", "QUALIFIED_ESTIMATE", "CURRENT_DESIGN_VALUE"]
+    },
+    "ChangeEvent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["event_id", "occurred_at"],
+      "properties": {
+        "event_id": {"type": "string", "minLength": 1},
+        "occurred_at": {"type": "string", "format": "date-time"},
+        "note": {"type": "string", "minLength": 1}
+      }
+    },
+    "SourceBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["document_role", "document_sha256", "json_pointer"],
+      "properties": {
+        "document_role": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Caller-mapped role of the actual document (for example state_output); the verifier hashes the real file and re-reads the pointer value."
+        },
+        "document_sha256": {"$ref": "#/$defs/Sha256"},
+        "json_pointer": {"$ref": "#/$defs/JsonPointer"}
+      }
+    },
+    "DataRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "data_id",
+        "description",
+        "canonical_value",
+        "canonical_sha256",
+        "maturity",
+        "source_binding",
+        "public_wording",
+        "used_by",
+        "stale_if"
+      ],
+      "properties": {
+        "data_id": {"$ref": "#/$defs/DataId"},
+        "description": {"type": "string", "minLength": 1},
+        "canonical_value": {},
+        "canonical_sha256": {"$ref": "#/$defs/Sha256"},
+        "maturity": {"$ref": "#/$defs/Maturity"},
+        "source_binding": {"$ref": "#/$defs/SourceBinding"},
+        "evidence_ids": {"type": "array", "items": {"$ref": "#/$defs/EvidenceId"}},
+        "derivation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["method"],
+          "properties": {
+            "method": {"type": "string", "minLength": 1},
+            "input_data_ids": {"type": "array", "items": {"$ref": "#/$defs/DataId"}}
+          }
+        },
+        "public_wording": {"$ref": "#/$defs/PublicWording"},
+        "public_wording_template": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Required for QUALIFIED_ESTIMATE; must contain the {value} placeholder."
+        },
+        "state_entity_ids": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "used_by": {"type": "array", "items": {"$ref": "#/$defs/ArtifactId"}},
+        "stale_if": {"type": "array", "items": {"$ref": "#/$defs/DataId"}}
+      },
+      "if": {
+        "properties": {"maturity": {"const": "FROZEN_FOR_DELIVERY"}},
+        "required": ["maturity"]
+      },
+      "then": {
+        "description": "FROZEN_FOR_DELIVERY is confirmed only by the separate independent human review receipt; the ledger carries no freeze fields."
+      }
+    },
+    "ProvenanceRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": {"$ref": "#/$defs/RelativePath"},
+        "sha256": {"$ref": "#/$defs/Sha256"}
+      }
+    },
+    "ArtifactRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "artifact_id",
+        "artifact_kind",
+        "content_sha256",
+        "deterministic",
+        "built_from"
+      ],
+      "properties": {
+        "artifact_id": {"$ref": "#/$defs/ArtifactId"},
+        "artifact_kind": {
+          "type": "string",
+          "enum": [
+            "svg_editable", "svg_compiled", "svg_preview", "svg_manifest",
+            "presentation_handoff", "visible_copy", "ppt_page", "pptx_deck",
+            "delivery_package", "report", "other"
+          ]
+        },
+        "description": {"type": "string", "minLength": 1},
+        "relative_path": {"$ref": "#/$defs/RelativePath"},
+        "content_sha256": {"$ref": "#/$defs/Sha256"},
+        "deterministic": {
+          "type": "boolean",
+          "description": "true requires a builder-owned provenance sidecar; false requires independent human review confirmation of the input/output binding."
+        },
+        "provenance": {
+          "$ref": "#/$defs/ProvenanceRef",
+          "description": "Builder-owned sidecar; required when deterministic is true. The verifier hashes the sidecar bytes and enforces its output/input bindings."
+        },
+        "built_from": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["data_ids", "artifact_ids"],
+          "properties": {
+            "data_ids": {"type": "array", "items": {"$ref": "#/$defs/DataId"}},
+            "artifact_ids": {"type": "array", "items": {"$ref": "#/$defs/ArtifactId"}}
+          }
+        },
+        "build_event_id": {"type": "string", "minLength": 1}
+      }
+    },
+    "CopyBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["page_id", "json_pointer", "text_sha256"],
+      "properties": {
+        "page_id": {"type": "string", "minLength": 1},
+        "json_pointer": {"$ref": "#/$defs/JsonPointer"},
+        "text_sha256": {
+          "$ref": "#/$defs/Sha256",
+          "description": "Hash of the exact visible copy string read back from the actual handoff."
+        },
+        "data_ids": {"type": "array", "items": {"$ref": "#/$defs/DataId"}},
+        "wording_mode": {"$ref": "#/$defs/PublicWording"},
+        "no_key_data_dependency": {"type": "boolean"},
+        "human_review_note": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Required with no_key_data_dependency: why this slot needs no key-data binding; confirmed by the human review receipt."
+        }
+      }
+    },
+    "Freshness": {"type": "string", "enum": ["CURRENT", "STALE"]},
+    "FreshnessReason": {
+      "type": "string",
+      "enum": [
+        "DATA_VALUE_CHANGED_UNBOUND",
+        "SOURCE_DOCUMENT_CHANGED",
+        "SOURCE_BINDING_MISMATCH",
+        "UPSTREAM_DATA_STALE",
+        "STATE_CHAIN_STALE",
+        "INPUT_HASH_CHANGED",
+        "CONTENT_HASH_CHANGED",
+        "FILE_MISSING",
+        "MANIFEST_ASSET_MISMATCH",
+        "PROVENANCE_MISMATCH",
+        "PROVENANCE_OUTPUT_MISMATCH",
+        "UPSTREAM_ARTIFACT_STALE"
+      ]
+    },
+    "DataFreshnessEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["data_id", "maturity", "freshness", "reasons"],
+      "properties": {
+        "data_id": {"$ref": "#/$defs/DataId"},
+        "maturity": {"$ref": "#/$defs/Maturity"},
+        "freshness": {"$ref": "#/$defs/Freshness"},
+        "reasons": {"type": "array", "items": {"$ref": "#/$defs/FreshnessReason"}}
+      }
+    },
+    "ArtifactFreshnessEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["artifact_id", "artifact_kind", "freshness", "reasons"],
+      "properties": {
+        "artifact_id": {"$ref": "#/$defs/ArtifactId"},
+        "artifact_kind": {
+          "type": "string",
+          "enum": [
+            "svg_editable", "svg_compiled", "svg_preview", "svg_manifest",
+            "presentation_handoff", "visible_copy", "ppt_page", "pptx_deck",
+            "delivery_package", "report", "other"
+          ]
+        },
+        "freshness": {"$ref": "#/$defs/Freshness"},
+        "reasons": {"type": "array", "items": {"$ref": "#/$defs/FreshnessReason"}}
+      }
+    },
+    "DeliveryMode": {"type": "string", "enum": ["INTERMEDIATE", "DELIVERY"]},
+    "FreshnessReceipt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "receipt_version",
+        "mode",
+        "ledger_canonical_sha256",
+        "input_file_hashes",
+        "dependency_graph_digest",
+        "data",
+        "artifacts",
+        "stale_data_count",
+        "stale_artifact_count"
+      ],
+      "properties": {
+        "receipt_version": {"const": "2.0.0"},
+        "mode": {"$ref": "#/$defs/DeliveryMode"},
+        "ledger_canonical_sha256": {"$ref": "#/$defs/Sha256"},
+        "computed_with_state_output": {"type": "boolean"},
+        "input_file_hashes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["role", "sha256"],
+            "properties": {
+              "role": {"type": "string", "minLength": 1},
+              "sha256": {"$ref": "#/$defs/Sha256"}
+            }
+          }
+        },
+        "dependency_graph_digest": {"$ref": "#/$defs/Sha256"},
+        "copy_bindings_digest": {"$ref": "#/$defs/Sha256"},
+        "human_review_digest": {"$ref": "#/$defs/Sha256"},
+        "pptx_sha256": {"$ref": "#/$defs/Sha256"},
+        "data": {"type": "array", "items": {"$ref": "#/$defs/DataFreshnessEntry"}},
+        "artifacts": {"type": "array", "items": {"$ref": "#/$defs/ArtifactFreshnessEntry"}},
+        "stale_data_count": {"type": "integer", "minimum": 0},
+        "stale_artifact_count": {"type": "integer", "minimum": 0}
+      }
+    }
+  }
+}

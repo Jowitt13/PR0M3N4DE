@@ -15,11 +15,16 @@ except ImportError:  # pragma: no cover - only an incomplete runtime install rea
     Draft202012Validator = None  # type: ignore[assignment,misc]
     FormatChecker = None  # type: ignore[assignment,misc]
 
-from _rfc3339 import is_rfc3339_datetime
 from _human_record import is_human_record_label
+from _rfc3339 import is_rfc3339_datetime
+from presentation_audience_copy import (
+    CODE_AUDIENCE_CONTEXT_INVALID,
+    audience_readiness_errors,
+)
 
 JsonObject = Mapping[str, Any]
 SCHEMA_PATH = Path(__file__).resolve().parents[1] / "references" / "presentation-handoff.schema.json"
+RETIRED_CONTRACT_VERSION = "1.0.0"
 PAGE_REQUIRED_PREFIXES: dict[str, tuple[str, ...]] = {
     "P-01-cover": ("RC-",),
     "P-02-brief-evidence": ("E-",),
@@ -48,6 +53,7 @@ class HandoffValidationResult(TypedDict):
 
     ok: bool
     handoff_id: str | None
+    audience_ready: bool
     errors: list[HandoffError]
 
 
@@ -159,20 +165,59 @@ def _validate_assets(handoff: JsonObject, selected_ids: set[str], errors: list[H
             _error(errors, "ASSET_PATH_NOT_LOCAL", f"/local_assets/{index}/relative_path", "local asset path must remain a safe project-relative path")
 
 
-def validate_presentation_handoff(handoff: JsonObject, schema: JsonObject) -> HandoffValidationResult:
-    """Validate one local handoff deterministically without rendering or mutation."""
+def validate_presentation_handoff(
+    handoff: JsonObject,
+    schema: JsonObject,
+    copy_review: JsonObject | None = None,
+    enforce_audience_gate: bool = True,
+) -> HandoffValidationResult:
+    """Validate one local handoff deterministically without rendering or mutation.
+
+    Since contract 2.0.0 the four-layer audience-copy gate is part of this
+    validator: a handoff without a valid audience context or without an
+    explicit, hash-bound human copy review is reported as not audience-ready
+    and fails closed. A retired 1.0.0 handoff is never silently accepted.
+    Builders pass ``enforce_audience_gate=False`` because the human copy
+    review is a separate step that happens after a handoff is assembled; every
+    final-validation path keeps the gate enforced.
+    """
 
     errors = _schema_errors(handoff, schema)
+    audience_ready = False
+    if handoff.get("contract_version") == RETIRED_CONTRACT_VERSION:
+        errors.append(
+            {
+                "code": "PRESENTATION_HANDOFF_CONTRACT_VERSION_RETIRED",
+                "path": "/contract_version",
+                "message": f"contract {RETIRED_CONTRACT_VERSION} is retired; rebuild the handoff under 2.0.0 with the audience-copy contract (references/audience-copy-contract.md)",
+            }
+        )
     selected_ids = _validate_selection(handoff, errors)
     _validate_pages(handoff, _authoritative_ids(handoff, selected_ids), errors)
     _validate_assets(handoff, selected_ids, errors)
+    if enforce_audience_gate and not errors or enforce_audience_gate and not any(item["code"] in {"SCHEMA_VALIDATION_FAILED", "VALIDATOR_UNAVAILABLE", "SCHEMA_INVALID"} for item in errors):
+        deck_framework = handoff.get("deck_framework")
+        pages = [page for page in deck_framework if isinstance(page, Mapping)] if isinstance(deck_framework, list) else []
+        chain_ids = _authoritative_ids(handoff, set())
+        gate_errors = audience_readiness_errors(
+            pages,
+            handoff.get("audience_context"),
+            handoff.get("public_claims", []),
+            copy_review,
+            chain_ids,
+        )
+        for item in gate_errors:
+            if item["code"] == CODE_AUDIENCE_CONTEXT_INVALID and any(existing["code"] == CODE_AUDIENCE_CONTEXT_INVALID for existing in errors):
+                continue
+            errors.append({"code": item["code"], "path": item["path"], "message": item["message"]})
+        audience_ready = not gate_errors
     errors.sort(key=lambda item: (item["path"], item["code"], item["message"]))
     handoff_id = handoff.get("handoff_id") if isinstance(handoff.get("handoff_id"), str) else None
-    return {"ok": not errors, "handoff_id": handoff_id, "errors": errors}
+    return {"ok": not errors, "handoff_id": handoff_id, "audience_ready": audience_ready, "errors": errors}
 
 
 def _load_failure(code: str, message: str) -> HandoffValidationResult:
-    return {"ok": False, "handoff_id": None, "errors": [{"code": code, "path": "", "message": message}]}
+    return {"ok": False, "handoff_id": None, "audience_ready": False, "errors": [{"code": code, "path": "", "message": message}]}
 
 
 def main(argv: Sequence[str]) -> int:
@@ -180,14 +225,16 @@ def main(argv: Sequence[str]) -> int:
 
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("handoff", type=Path)
+    parser.add_argument("copy_review", type=Path, nargs="?", default=None, help="explicit human copy review binding the audience context and visible copy hashes")
     arguments = parser.parse_args(argv[1:])
     try:
         handoff = load_json_object(arguments.handoff)
         schema = load_json_object(SCHEMA_PATH)
+        review = load_json_object(arguments.copy_review) if arguments.copy_review is not None else None
     except (OSError, ValueError, json.JSONDecodeError) as error:
         print(json.dumps(_load_failure("LOCAL_AUTHORITY_LOAD_FAILED", str(error)), ensure_ascii=False, sort_keys=True))
         return 2
-    result = validate_presentation_handoff(handoff, schema)
+    result = validate_presentation_handoff(handoff, schema, review)
     print(json.dumps(result, ensure_ascii=False, sort_keys=True, separators=(",", ":")))
     return 0 if result["ok"] else 1
 

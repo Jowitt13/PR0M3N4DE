@@ -19,6 +19,14 @@ from pathlib import Path, PurePosixPath
 from typing import Any, Literal, TypedDict
 
 from _rfc3339 import is_rfc3339_datetime
+from release_media_projection import (
+    CASE_MEDIA_MANIFEST_PATH,
+    CASE_MEDIA_REFERENCE_PATH,
+    CASE_MEDIA_DIRECTORY,
+    project_release_media_manifest,
+    release_case_media_reference,
+    validate_release_media_projection,
+)
 
 
 SKILL_ID = "architectural-concept-design"
@@ -122,6 +130,11 @@ def _read_skill_version(source_root: Path) -> str:
 def _collect_release_files(source_root: Path) -> list[tuple[PurePosixPath, bytes]]:
     if not source_root.is_dir():
         raise ValueError("SOURCE_ROOT_MISSING: Skill package directory is unavailable")
+    source_manifest = source_root / Path(*CASE_MEDIA_MANIFEST_PATH.parts)
+    try:
+        media_projection = project_release_media_manifest(source_manifest.read_bytes())
+    except OSError as error:
+        raise ValueError(f"CASE_MEDIA_MANIFEST_INVALID: {error}") from error
     files: list[tuple[PurePosixPath, bytes]] = []
     for path in sorted(source_root.rglob("*")):
         relative = PurePosixPath(path.relative_to(source_root).as_posix())
@@ -133,7 +146,17 @@ def _collect_release_files(source_root: Path) -> list[tuple[PurePosixPath, bytes
             continue
         if not _is_allowed_package_path(relative):
             raise ValueError(f"PACKAGE_PATH_FORBIDDEN: {relative.as_posix()}")
-        files.append((relative, path.read_bytes()))
+        if relative.parts[:2] == CASE_MEDIA_DIRECTORY.parts:
+            if relative in media_projection["excluded_asset_paths"]:
+                continue
+            if relative not in media_projection["retained_asset_paths"]:
+                raise ValueError(f"RELEASE_MEDIA_ASSET_UNMANIFESTED: {relative.as_posix()}")
+        content = path.read_bytes()
+        if relative == CASE_MEDIA_MANIFEST_PATH:
+            content = media_projection["manifest"]
+        elif relative == CASE_MEDIA_REFERENCE_PATH:
+            content = release_case_media_reference()
+        files.append((relative, content))
     required = {
         PurePosixPath("SKILL.md"),
         PurePosixPath("pyproject.toml"),
@@ -143,6 +166,8 @@ def _collect_release_files(source_root: Path) -> list[tuple[PurePosixPath, bytes
     present = {path for path, _ in files}
     if missing := sorted(required - present):
         raise ValueError(f"PACKAGE_REQUIRED_FILE_MISSING: {', '.join(path.as_posix() for path in missing)}")
+    if errors := validate_release_media_projection(dict(files)):
+        raise ValueError(errors[0])
     return files
 
 
@@ -287,10 +312,14 @@ def verify_release_archive(archive_path: Path) -> ReleaseResult:
             actual = set(names) - {manifest_member}
             if actual != set(expected):
                 return _result(False, "failed", errors=["ARCHIVE_CONTENT_MISMATCH: archive members do not exactly match the manifest"])
+            packaged_files: dict[PurePosixPath, bytes] = {}
             for name, record in expected.items():
                 content = archive.read(name)
                 if len(content) != record["size"] or _sha256(content) != record["sha256"]:
                     return _result(False, "failed", errors=[f"ARCHIVE_HASH_MISMATCH: {record['path']}"])
+                packaged_files[PurePosixPath(str(record["path"]))] = content
+            if errors := validate_release_media_projection(packaged_files):
+                return _result(False, "failed", errors=errors)
             return _result(True, "verified", manifest)
     except (OSError, ValueError, zipfile.BadZipFile, KeyError) as error:
         return _result(False, "failed", errors=[f"ARCHIVE_INVALID: {error}"])

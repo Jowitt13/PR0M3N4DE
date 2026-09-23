@@ -1,6 +1,7 @@
 # Presentation handoff and fixed deck framework
 
 > **Single authority** for the local handoff package prepared after human precedent selection and before a separately installed presentation renderer. This reference defines traceable content, a fixed deck framework, and renderer boundaries. It does not install or invoke `ppt-master`, access any network source, download media, create a PPTX, or alter the architectural state package.
+> Contract version **2.0.0** adds the shared four-layer audience-copy contract; see [audience-copy-contract.md](audience-copy-contract.md). A retired 1.0.0 handoff fails closed with `PRESENTATION_HANDOFF_CONTRACT_VERSION_RETIRED` and is never silently accepted.
 
 ## Contents
 
@@ -12,6 +13,7 @@
 - [5. Local visual assets](#5-local-visual-assets)
 - [6. Human design decision request](#6-human-design-decision-request)
 - [7. Renderer boundary and stop condition](#7-renderer-boundary-and-stop-condition)
+- [8. Audience-ready gate and human copy review](#8-audience-ready-gate-and-human-copy-review)
 
 ## Purpose and prerequisites
 
@@ -25,10 +27,10 @@ The handoff is a presentation plan, not a new architectural authority. Its IDs m
 
 ## 1. Authority and input boundary
 
-Use [presentation-handoff.schema.json](presentation-handoff.schema.json) for the handoff JSON and run:
+Use [presentation-handoff.schema.json](presentation-handoff.schema.json) (contract 2.0.0) for the handoff JSON and run:
 
 ```text
-scripts/validate_presentation_handoff.py <handoff.json>
+scripts/validate_presentation_handoff.py <handoff.json> <human-copy-review.json>
 ```
 
 The validator is deterministic and read-only. It validates the handoff alone; it neither reads project files beyond its bundled Schema nor verifies that an external source is still available. `state_package.input_hash` and `state_package.output_hash` identify the reviewed state without inserting absolute local paths, private source responses, API keys, or renderer output.
@@ -58,7 +60,9 @@ Populate these sections exactly once:
 | State reference | input/output SHA-256 and validation time | Does not replace or mutate the state package. |
 | Selected precedents | one to three human-selected `RC-xxx` records | Locator is attribution, not a license or live-fetch instruction. |
 | Architectural chain | existing E/C/S/R/H/O/K IDs plus pending design-decision state | Do not manufacture a `D-xxx`. |
-| Deck framework | the eleven ordered pages below | Do not reorder, add, or remove pages. |
+| Deck framework | the eleven ordered pages below, each under the four-layer contract | Do not reorder, add, or remove pages. |
+| Audience context | language, audience type, setting, key takeaway, planned minutes | The builder never guesses the audience. |
+| Public claims | structured, human-confirmed backing for risky public wording | No claim, no risky wording on screen. |
 | Local assets | optional, relative, team-authored diagram paths only | No remote URL, source image, drawing, quotation, or downloaded media. |
 | Rendering boundary | explicit no-install/no-network/no-PPTX flags | Keeps `ppt-master` independent until a later install task. |
 
@@ -95,3 +99,23 @@ The presentation may frame the option comparison and ask the human to decide. Un
 This contract finishes at an `EXTERNAL_RENDERER_NOT_INVOKED` handoff for `ppt-master`. It must assert all of the following as `false`: `pptx_generated`, `installation_attempted`, `network_accessed`, `third_party_media_packaged`, and `web_application_created`.
 
 Installing, pinning, updating, or invoking `ppt-master`; producing an editable PPTX; downloading or embedding third-party media; browsing source locators; creating a Web application; and packaging or release verification remain separate reviewed tasks. This contract does not authorize any of them.
+
+## 8. Audience-ready gate and human copy review
+
+Every page separates `internal_trace` (page locator, `required_entity_ids`,
+`internal_purpose`), `design_content` (the validated entities a page traces
+to), `visible_slide_copy` (`headline` plus up to three `supporting_points`),
+and `speaker_notes` (`delivery_hint` plus `evidence_and_limitations`). Only
+`visible_slide_copy` and no other layer may be rendered; `page_id` values
+such as `P-01-cover` never appear on screen.
+
+The handoff also carries a required `audience_context` (language, audience
+type, setting, key takeaway, planned minutes) and `public_claims`. The
+validator runs the shared gate from [audience-copy-contract.md](audience-copy-contract.md):
+internal IDs, machine status codes, hashes, and review references in visible
+copy hard-fail; process wording produces findings for the explicit human
+copy review; risky public wording requires a human-confirmed claim backed by
+`VERIFIED` evidence. The review record binds the canonical SHA-256 of the
+audience context and of all visible copy, so any copy change voids the
+review. Without an `APPROVED` review the handoff is not audience-ready and
+fails closed.

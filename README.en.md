@@ -275,7 +275,7 @@ skills/architectural-concept-design/
 ├── references/              # contracts, schemas, and architectural guidance
 ├── scripts/                 # deterministic local operations
 ├── assets/                  # packageable local assets
-├── pyproject.toml           # pinned Python runtime metadata (0.2.0)
+├── pyproject.toml           # pinned Python runtime metadata (0.3.0)
 └── uv.lock                  # locked runtime dependencies
 
 tests/skill/                 # fixtures, expected invariants, evaluations
@@ -299,7 +299,7 @@ and release boundaries are documented in
 and
 [`skills/architectural-concept-design/references/release-installation.md`](skills/architectural-concept-design/references/release-installation.md).
 
-The current repository package metadata is version `0.2.0`. Archive creation,
+The current repository package metadata is version `0.3.0`. Archive creation,
 verification, and clean installation are deterministic local operations; a
 release archive records its source commit, build time, manifest, and per-file
 hashes. See

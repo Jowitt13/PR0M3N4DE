@@ -433,6 +433,22 @@ def propagate_stale(
     return {"affected_ids": sorted(affected_ids), "output": propagated}, result, 0
 
 
+def stale_entity_records(output_payload: JsonObject) -> dict[str, JsonObject]:
+    """Return ``{entity_id: stale record}`` for every output entity carrying stale metadata.
+
+    ARCH-124 bridge: the shared design-data staleness layer treats existing
+    ADR-0001 ``propagate-stale`` results as upstream change evidence through
+    this function instead of duplicating the output-entity indexing rules.
+    """
+    index, _errors = _index_entities(_output_entity_groups(output_payload))
+    records: dict[str, JsonObject] = {}
+    for entity_id, entity in index.items():
+        stale = entity.value.get("stale")
+        if isinstance(stale, Mapping):
+            records[entity_id] = dict(stale)
+    return records
+
+
 def _check_output_consistency(
     input_payload: JsonObject,
     output_payload: JsonObject,

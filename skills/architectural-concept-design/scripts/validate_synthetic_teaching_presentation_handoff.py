@@ -13,6 +13,8 @@ from typing import Any, Mapping, Sequence, TypedDict, cast
 
 from jsonschema import Draft202012Validator, FormatChecker
 
+from presentation_audience_copy import audience_readiness_errors
+
 SKILL_ROOT = Path(__file__).resolve().parents[1]
 SCHEMA_PATH = SKILL_ROOT / "references" / "synthetic-teaching-presentation-handoff.schema.json"
 
@@ -35,6 +37,7 @@ class HandoffError(TypedDict):
 class HandoffValidationResult(TypedDict):
     ok: bool
     outcome: str
+    audience_ready: bool
     errors: list[HandoffError]
 
 
@@ -102,12 +105,20 @@ def _walk(value: object, path: str, errors: list[HandoffError]) -> None:
 def validate_synthetic_teaching_presentation_handoff(
     handoff: JsonObject,
     schema: JsonObject,
+    copy_review: JsonObject | None = None,
+    enforce_audience_gate: bool = True,
 ) -> HandoffValidationResult:
-    """Validate schema and ADR-0008 semantic boundaries without I/O or network."""
+    """Validate schema and ADR-0008 semantic boundaries without I/O or network.
+
+    Contract 2.0.0 adds the shared four-layer audience-copy gate: without a
+    valid audience context and an explicit, hash-bound human copy review the
+    teaching handoff is not audience-ready and fails closed. Builders pass
+    ``enforce_audience_gate=False``; every final-validation path keeps it on.
+    """
 
     errors = _schema_errors(handoff, schema)
     if errors:
-        return {"ok": False, "outcome": "SYNTHETIC_HANDOFF_INVALID", "errors": errors}
+        return {"ok": False, "outcome": "SYNTHETIC_HANDOFF_INVALID", "audience_ready": False, "errors": errors}
 
     labels = _strings(handoff.get("teaching_labels"))
     if tuple(labels) != TEACHING_LABELS:
@@ -160,8 +171,25 @@ def validate_synthetic_teaching_presentation_handoff(
                 _error(errors, "SYNTHETIC_VISIBLE_NOTICE_INVALID", f"/deck_framework/{index}/visible_teaching_notice", "every page must visibly carry the teaching-demo notice")
 
     _walk(handoff, "", errors)
+    audience_ready = False
+    if enforce_audience_gate:
+        deck_framework = handoff.get("deck_framework")
+        pages = [page for page in deck_framework if isinstance(page, Mapping)] if isinstance(deck_framework, list) else []
+        resolvable_ids = {
+            item
+            for item in handoff.get("program_space_ids", [])
+            if isinstance(item, str)
+        }
+        gate_errors = audience_readiness_errors(pages, handoff.get("audience_context"), handoff.get("public_claims", []), copy_review, resolvable_ids)
+        errors.extend({"code": item["code"], "path": item["path"], "message": item["message"]} for item in gate_errors)
+        audience_ready = not gate_errors
     errors.sort(key=lambda item: (item["path"], item["code"], item["message"]))
-    return {"ok": not errors, "outcome": "SYNTHETIC_HANDOFF_VALID" if not errors else "SYNTHETIC_HANDOFF_INVALID", "errors": errors}
+    return {
+        "ok": not errors,
+        "outcome": "SYNTHETIC_HANDOFF_VALID" if not errors else "SYNTHETIC_HANDOFF_INVALID",
+        "audience_ready": audience_ready,
+        "errors": errors,
+    }
 
 
 def main(argv: Sequence[str]) -> int:
@@ -169,13 +197,15 @@ def main(argv: Sequence[str]) -> int:
 
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("handoff", type=Path)
+    parser.add_argument("copy_review", type=Path, nargs="?", default=None, help="explicit human copy review binding the audience context and visible copy hashes")
     arguments = parser.parse_args(argv)
     try:
         handoff = load_json_object(arguments.handoff)
         schema = load_json_object(SCHEMA_PATH)
-        result = validate_synthetic_teaching_presentation_handoff(handoff, schema)
+        review = load_json_object(arguments.copy_review) if arguments.copy_review is not None else None
+        result = validate_synthetic_teaching_presentation_handoff(handoff, schema, review)
     except (OSError, ValueError, json.JSONDecodeError) as error:
-        result = {"ok": False, "outcome": "SYNTHETIC_HANDOFF_INVALID", "errors": [{"code": "SYNTHETIC_HANDOFF_LOAD_FAILED", "path": "", "message": str(error)}]}
+        result = {"ok": False, "outcome": "SYNTHETIC_HANDOFF_INVALID", "audience_ready": False, "errors": [{"code": "SYNTHETIC_HANDOFF_LOAD_FAILED", "path": "", "message": str(error)}]}
     print(json.dumps(result, ensure_ascii=False, sort_keys=True, separators=(",", ":"), allow_nan=False))
     return 0 if result["ok"] else 1
 

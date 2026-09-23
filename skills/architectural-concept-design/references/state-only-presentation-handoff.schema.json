@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://architecture-pre-design-skills.local/schemas/state-only-presentation-handoff/1.0.0",
+  "$id": "https://architecture-pre-design-skills.local/schemas/state-only-presentation-handoff/2.0.0",
   "title": "State-only Architecture Presentation Handoff",
-  "description": "A real-project, local-state presentation handoff with no external precedent or third-party media transfer.",
+  "description": "A real-project, local-state, audience-ready presentation handoff with no external precedent or third-party media transfer. Version 2.0.0 adds the shared four-layer audience-copy contract; a 1.0.0 handoff is retired and fails closed.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -16,10 +16,12 @@
     "architectural_chain",
     "deck_framework",
     "local_assets",
+    "audience_context",
+    "public_claims",
     "rendering_boundary"
   ],
   "properties": {
-    "contract_version": {"const": "1.0.0"},
+    "contract_version": {"const": "2.0.0"},
     "mode": {"const": "STATE_ONLY_TEAM_ORIGINAL"},
     "handoff_id": {"type": "string", "pattern": "^SOH-[0-9]{3,}$"},
     "project_id": {"type": "string", "pattern": "^P-[A-Za-z0-9][A-Za-z0-9-]*$"},
@@ -37,10 +39,86 @@
       "type": "array",
       "items": {"$ref": "#/$defs/LocalAsset"}
     },
+    "audience_context": {"$ref": "#/$defs/AudienceContext"},
+    "public_claims": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/PublicClaim"}
+    },
     "rendering_boundary": {"$ref": "#/$defs/RenderingBoundary"}
   },
   "$defs": {
     "Sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "AudienceStringList": {
+      "type": "array",
+      "maxItems": 8,
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "AudienceContext": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["presentation_language", "audience_type", "setting", "key_takeaway", "planned_minutes"],
+      "properties": {
+        "presentation_language": {"type": "string", "pattern": "^[a-zA-Z]{2,3}(-[A-Za-z0-9]{2,8})*$"},
+        "audience_type": {"enum": ["studio_critic_review", "jury_review", "client_briefing", "public_exhibition", "teaching_demo"]},
+        "setting": {"type": "string", "minLength": 1},
+        "key_takeaway": {"type": "string", "minLength": 1},
+        "planned_minutes": {"type": "integer", "minimum": 5, "maximum": 30},
+        "audience_already_knows": {"$ref": "#/$defs/AudienceStringList"},
+        "internal_only_topics": {"$ref": "#/$defs/AudienceStringList"},
+        "human_claim_confirmations_required": {"$ref": "#/$defs/AudienceStringList"}
+      }
+    },
+    "VisibleSlideCopy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["headline"],
+      "properties": {
+        "headline": {"type": "string", "minLength": 1, "maxLength": 80},
+        "supporting_points": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 3,
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "SpeakerNotes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["delivery_hint"],
+      "properties": {
+        "delivery_hint": {"type": "string", "minLength": 1},
+        "evidence_and_limitations": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 6,
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "PublicClaim": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["page_id", "quoted_text", "claim_type", "evidence_ids", "evidence_status", "limitations", "allowed_for_public_display", "confirmed_by"],
+      "properties": {
+        "page_id": {"type": "string", "minLength": 1},
+        "quoted_text": {"type": "string", "minLength": 1},
+        "claim_type": {"enum": ["permission", "approval", "regulatory_compliance", "exemption", "area_basis"]},
+        "evidence_ids": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "evidence_status": {"type": "string", "minLength": 1},
+        "limitations": {"type": "string", "minLength": 1},
+        "allowed_for_public_display": {"type": "boolean"},
+        "confirmed_by": {"type": "string", "minLength": 1}
+      }
+    },
     "StatePackageReference": {
       "type": "object",
       "additionalProperties": false,
@@ -93,15 +171,15 @@
     "DeckPage": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["page_id", "title", "purpose", "required_state_ids", "visible_state_only_notice", "visual_strategy", "speaker_note"],
+      "required": ["page_id", "internal_purpose", "required_state_ids", "visible_state_only_notice", "visible_slide_copy", "speaker_notes", "visual_strategy"],
       "properties": {
         "page_id": {"type": "string", "pattern": "^SOP-(0[1-9]|10)$"},
-        "title": {"type": "string", "minLength": 1},
-        "purpose": {"type": "string", "minLength": 1},
+        "internal_purpose": {"type": "string", "minLength": 1},
         "required_state_ids": {"$ref": "#/$defs/IdList"},
         "visible_state_only_notice": {"const": "STATE-ONLY HANDOFF — NO EXTERNAL PRECEDENT OR THIRD-PARTY MEDIA"},
-        "visual_strategy": {"const": "team_original_diagram_only"},
-        "speaker_note": {"type": "string", "minLength": 1}
+        "visible_slide_copy": {"$ref": "#/$defs/VisibleSlideCopy"},
+        "speaker_notes": {"$ref": "#/$defs/SpeakerNotes"},
+        "visual_strategy": {"const": "team_original_diagram_only"}
       }
     },
     "LocalAsset": {

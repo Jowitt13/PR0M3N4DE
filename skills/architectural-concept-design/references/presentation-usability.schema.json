@@ -1,0 +1,201 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://architecture-pre-design-skills.local/schemas/presentation-usability/1.0.0",
+  "title": "Presentation Usability Plan, Human Review, and Rehearsal Evidence",
+  "description": "Additive ARCH-125 contracts deciding whether a deck is actually presentable. The usability plan binds per-page communication purpose, timing, and speaker-note guidance to the actual handoff; the independent human review receipt and the rehearsal evidence receipt are caller-supplied and hash-bound so any copy, notes, order, or deck change voids them. None of these files may contain internal trace, error codes, or approval流水; none of them proves real-world human action by itself — the caller is responsible for supplying genuine human records.",
+  "type": "object",
+  "oneOf": [
+    {"$ref": "#/$defs/UsabilityPlan"},
+    {"$ref": "#/$defs/UsabilityReview"},
+    {"$ref": "#/$defs/RehearsalEvidence"}
+  ],
+  "$defs": {
+    "Sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "PageId": {"type": "string", "minLength": 1},
+    "PageOrder": {"type": "array", "items": {"$ref": "#/$defs/PageId"}, "minItems": 1},
+    "UsabilityPlan": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contract_version", "plan_kind", "handoff_sha256", "page_order", "pages", "target_seconds"],
+      "properties": {
+        "contract_version": {"const": "1.0.0"},
+        "plan_kind": {"const": "PRESENTATION_USABILITY_PLAN"},
+        "handoff_sha256": {
+          "$ref": "#/$defs/Sha256",
+          "description": "Canonical hash of the bound handoff object; any handoff change voids the plan."
+        },
+        "page_order": {"$ref": "#/$defs/PageOrder"},
+        "target_seconds": {"type": "integer", "minimum": 30, "maximum": 14400},
+        "pages": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "page_id", "communication_purpose", "estimated_seconds",
+              "key_message", "sequence_hint", "visual_reference",
+              "evidence_note", "transition_hint", "notes_sha256"
+            ],
+            "properties": {
+              "page_id": {"$ref": "#/$defs/PageId"},
+              "communication_purpose": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Internal only; never visible on a slide."
+              },
+              "estimated_seconds": {
+                "type": "integer",
+                "minimum": 5,
+                "maximum": 3600,
+                "description": "Planning estimate. Never accepted as an actual rehearsal duration."
+              },
+              "key_message": {"type": "string", "minLength": 1},
+              "sequence_hint": {"type": "string", "minLength": 1},
+              "visual_reference": {"type": "string", "minLength": 1},
+              "evidence_note": {
+                "type": "string",
+                "minLength": 1,
+                "description": "What on this page is backed by evidence and what remains an estimate or assumption."
+              },
+              "transition_hint": {"type": "string", "minLength": 1},
+              "notes_sha256": {
+                "$ref": "#/$defs/Sha256",
+                "description": "Canonical hash of the page's actual speaker_notes object in the handoff; editing notes voids plan, review, and rehearsal."
+              }
+            }
+          }
+        }
+      }
+    },
+    "Severity": {
+      "type": "string",
+      "enum": ["BLOCKER", "MAJOR", "MINOR", "NOTE"]
+    },
+    "UsabilityReview": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "review_kind", "status", "reviewed_by", "audit_rules_version",
+        "plan_sha256", "handoff_sha256", "visible_copy_sha256",
+        "speaker_notes_sha256", "page_order", "page_findings",
+        "findings_resolutions", "findings_sha256"
+      ],
+      "properties": {
+        "review_kind": {"const": "PRESENTATION_USABILITY_REVIEW"},
+        "status": {
+          "type": "string",
+          "enum": ["APPROVED", "CHANGES_REQUESTED"],
+          "description": "Only APPROVED may enter delivery."
+        },
+        "reviewed_by": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Must identify a human; agent, model, bot, and system labels are rejected."
+        },
+        "audit_rules_version": {"const": "1.0.0"},
+        "plan_sha256": {"$ref": "#/$defs/Sha256"},
+        "handoff_sha256": {"$ref": "#/$defs/Sha256"},
+        "visible_copy_sha256": {
+          "$ref": "#/$defs/Sha256",
+          "description": "Canonical hash of the handoff's visible copy section."
+        },
+        "speaker_notes_sha256": {
+          "$ref": "#/$defs/Sha256",
+          "description": "Canonical hash of the handoff's speaker notes section."
+        },
+        "page_order": {"$ref": "#/$defs/PageOrder"},
+        "deck_sha256": {"$ref": "#/$defs/Sha256"},
+        "page_findings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["page_id", "severity", "summary"],
+            "properties": {
+              "page_id": {"$ref": "#/$defs/PageId"},
+              "severity": {"$ref": "#/$defs/Severity"},
+              "summary": {"type": "string", "minLength": 1}
+            }
+          }
+        },
+        "findings_resolutions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["finding_id", "resolution"],
+            "properties": {
+              "finding_id": {"type": "string", "minLength": 1},
+              "resolution": {"type": "string", "minLength": 1}
+            }
+          }
+        },
+        "findings_sha256": {"$ref": "#/$defs/Sha256"}
+      }
+    },
+    "RehearsalEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "evidence_kind", "conclusion", "presenter", "started_at", "ended_at",
+        "actual_total_seconds", "target_seconds", "per_page_seconds",
+        "plan_sha256", "handoff_sha256", "visible_copy_sha256",
+        "speaker_notes_sha256", "page_order", "usability_review_sha256",
+        "audit_rules_version", "rehearsal_evidence_sha256"
+      ],
+      "properties": {
+        "evidence_kind": {"const": "PRESENTATION_REHEARSAL_EVIDENCE"},
+        "rehearsal_evidence_sha256": {
+          "$ref": "#/$defs/Sha256",
+          "description": "Canonical SHA-256 of this entire object minus this field itself (sorted keys, stable separators, array order preserved). The verifier recomputes it; any accepted semantic field change voids the record."
+        },
+        "conclusion": {
+          "type": "string",
+          "enum": ["COMPLETED", "NEEDS_CHANGES"],
+          "description": "Set by the human presenter. Only COMPLETED may enter delivery; builders can never fill this in."
+        },
+        "presenter": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Human presenter label; agent, model, bot, and system labels are rejected."
+        },
+        "started_at": {"type": "string", "format": "date-time"},
+        "ended_at": {"type": "string", "format": "date-time"},
+        "actual_total_seconds": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Actual wall-clock duration; must equal ended_at minus started_at. Estimated planning seconds are never accepted here."
+        },
+        "target_seconds": {"type": "integer", "minimum": 30},
+        "per_page_seconds": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["page_id", "seconds"],
+            "properties": {
+              "page_id": {"$ref": "#/$defs/PageId"},
+              "seconds": {"type": "integer", "minimum": 0}
+            }
+          }
+        },
+        "stuck_pages": {"type": "array", "items": {"$ref": "#/$defs/PageId"}},
+        "skipped_pages": {"type": "array", "items": {"$ref": "#/$defs/PageId"}},
+        "hard_to_explain_pages": {"type": "array", "items": {"$ref": "#/$defs/PageId"}},
+        "audience_feedback": {"type": "string", "minLength": 1},
+        "change_requests": {"type": "string", "minLength": 1},
+        "plan_sha256": {"$ref": "#/$defs/Sha256"},
+        "handoff_sha256": {"$ref": "#/$defs/Sha256"},
+        "visible_copy_sha256": {"$ref": "#/$defs/Sha256"},
+        "speaker_notes_sha256": {"$ref": "#/$defs/Sha256"},
+        "page_order": {"$ref": "#/$defs/PageOrder"},
+        "deck_sha256": {"$ref": "#/$defs/Sha256"},
+        "usability_review_sha256": {
+          "$ref": "#/$defs/Sha256",
+          "description": "Canonical hash of the approved usability review this rehearsal belongs to."
+        },
+        "audit_rules_version": {"const": "1.0.0"}
+      }
+    }
+  }
+}

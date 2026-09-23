@@ -1,0 +1,112 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://architecture-pre-design-skills.local/schemas/design-data-human-review/1.0.0",
+  "title": "Independent Human Design-Data Review and Freeze Receipt",
+  "description": "Separate, human-supplied confirmation for design-data delivery. Provided by the caller as its own input; an agent must never generate it. This is a syntactic and process gate only: it does not prove that a real human acted in the real world — the caller is responsible for supplying a genuine human record. Hash bindings void the review whenever the ledger, frozen values, wording bindings, or confirmed artifact bindings change.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "review_kind",
+    "status",
+    "reviewed_by",
+    "audit_rules_version",
+    "ledger_canonical_sha256",
+    "frozen_data_bindings",
+    "public_wording_bindings_sha256",
+    "artifact_bindings",
+    "findings",
+    "findings_resolutions",
+    "findings_sha256"
+  ],
+  "properties": {
+    "review_kind": {"const": "DESIGN_DATA_FREEZE_AND_PUBLIC_WORDING_REVIEW"},
+    "status": {
+      "type": "string",
+      "enum": ["APPROVED", "PENDING", "REJECTED"],
+      "description": "Only APPROVED may enter DELIVERY."
+    },
+    "reviewed_by": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Must identify a human; agent, model, bot, and system labels are rejected by the same boundary as the ARCH-122 copy review."
+    },
+    "audit_rules_version": {"const": "1.0.0"},
+    "ledger_canonical_sha256": {
+      "$ref": "#/$defs/Sha256",
+      "description": "Order-insensitive canonical hash of the whole reviewed ledger; any ledger edit voids this review."
+    },
+    "frozen_data_bindings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["data_id", "canonical_sha256", "public_wording"],
+        "properties": {
+          "data_id": {"$ref": "#/$defs/DataId"},
+          "canonical_sha256": {"$ref": "#/$defs/Sha256"},
+          "public_wording": {"$ref": "#/$defs/PublicWording"}
+        }
+      },
+      "description": "Every COORDINATED/FROZEN_FOR_DELIVERY data value confirmed by the human; any value or wording change voids the review."
+    },
+    "public_wording_bindings_sha256": {
+      "$ref": "#/$defs/Sha256",
+      "description": "Canonical hash of the ledger copy_bindings section; any page/copy binding change voids the review."
+    },
+    "artifact_bindings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["artifact_id", "content_sha256", "input_bindings_sha256"],
+        "properties": {
+          "artifact_id": {"$ref": "#/$defs/ArtifactId"},
+          "content_sha256": {"$ref": "#/$defs/Sha256"},
+          "input_bindings_sha256": {
+            "$ref": "#/$defs/Sha256",
+            "description": "Canonical hash of the artifact's build-time input binding (provenance inputs or built_from data hashes)."
+          }
+        },
+        "description": "Required for every non-deterministic artifact: a human confirms this exact input/output combination."
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["finding_id", "severity", "summary"],
+        "properties": {
+          "finding_id": {"type": "string", "minLength": 1},
+          "severity": {"type": "string", "enum": ["BLOCKER", "MAJOR", "MINOR", "NOTE"]},
+          "summary": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "findings_resolutions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["finding_id", "resolution"],
+        "properties": {
+          "finding_id": {"type": "string", "minLength": 1},
+          "resolution": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "findings_sha256": {
+      "$ref": "#/$defs/Sha256",
+      "description": "Canonical hash of findings plus findings_resolutions, binding the record to itself."
+    }
+  },
+  "$defs": {
+    "Sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "DataId": {"type": "string", "pattern": "^DD-[0-9]{3,}$"},
+    "ArtifactId": {"type": "string", "pattern": "^ART-[0-9]{3,}$"},
+    "PublicWording": {
+      "type": "string",
+      "enum": ["NOT_PUBLIC", "QUALIFIED_ESTIMATE", "CURRENT_DESIGN_VALUE"]
+    }
+  }
+}
