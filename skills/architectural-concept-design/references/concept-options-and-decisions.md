@@ -1,6 +1,6 @@
 # Precedent space operations, concept directions, and decision boundary
 
-> **Single authoritative source** for precedent/precedent operation extraction, concept-direction generation, concept differentiation, and the stop boundary before comparison and decision. This reference is not a Skill, not a workflow, and not a concept generator. It is a Phase 3 segment 5 procedure anchored in ADR-0001 and the upstream ledger chain.
+> **Single authoritative source** for working precedent studies and concepts, and the separate formal precedent-and-concept ledger. The formal Phase 3 segment 5 procedure is anchored in ADR-0001 and the upstream ledger chain; it is not a standalone Skill or workflow. Use the applicable entry below.
 
 ## Contents
 
@@ -30,9 +30,27 @@
 
 ## Prerequisites and authority boundary
 
+### Working concepts and precedent studies
+
+For ordinary case analysis or design drafts, start from the current request and accessible sources. A supplied single case can be analyzed directly; it does not need a complete project or a six-candidate discovery run. Describe the specific move, its spatial organization, what the source actually supports, your interpretation, preconditions, costs, failure conditions and a possible transfer. Existing attributed summaries are prompts, not VERIFIED facts. With insufficient drawings, label a diagram as analytical abstraction; do not invent the source building's plan. New external research still requires the source-access contract.
+
+For new construction, connect site placement, functional adjacency, entry/circulation, massing and spatial experience. For renovation, identify existing objects, mandated/tentative/unknown retention, proposed repair/adaptation/removal/addition, functional fit and old/new interfaces; unknown permissions, structure, heights and services remain explicit. Mixed projects must show their division of functions and shared connections. A user preference cannot erase a supplied mandatory retention condition.
+
+The model may author PROPOSED concepts and give reasoned qualitative recommendations. Tailor the number and depth to the request: one focused suggestion or deepening an adopted option does not need three new directions. When alternatives are requested, make their actual spatial operations different and explain the trade-offs and what could overturn them. Formal composition, material and aesthetic discussion can support a proposal, but do not count cosmetic changes as different spatial strategies or claim performance from appearance.
+
+Use known dimensions and deterministic area checks where available. Without scale, show relationships or conditional sketches, not a precise site plan. Describe which functions connect where, how movement works and why; avoid only naming abstract themes. A draft's source notes and uncertainty should be readable, without forcing the student to author machine IDs or JSON.
+
+Finish the requested case study or draft when it can inform drawing, revision or discussion. For comparison, local adoption or continued changes, use the working-advice section in [option-comparison-decision-handoff.md](option-comparison-decision-handoff.md). Ordinary proposals remain distinct from the formal O-xxx path below.
+
+### Formal O-xxx applicability
+
+The following upstream-ledger chain, exactly-three/two-with-insufficiency rules, evidence/mapping requirements and no-recommendation stop govern the formal precedent-and-concept ledger. They are not default requirements for the ordinary working concepts above. Formal Source/Evidence/Option records must satisfy their original contracts; no prose suggestion is automatically a formal O-xxx or a human decision.
+
 ### Upstream ledger dependencies
 
-This reference must only be used after all four upstream ledgers are complete:
+For the formal precedent-and-concept ledger:
+
+The formal precedent-and-concept ledger must only be used after all four upstream ledgers are complete:
 
 1. A completed **brief ledger** produced by [brief-analysis.md](brief-analysis.md).
 2. A completed **site ledger** produced by [site-context-analysis.md](site-context-analysis.md).
@@ -171,6 +189,8 @@ Each concept direction carries the identifier `O-xxx` (where `xxx` is a three-or
 - **Evidence trace** — `evidence_ids` linking to the Evidence Records (PROVIDED, VERIFIED, INFERRED, PROPOSED) that support this direction.
 
 ### Direction quantity
+
+This table governs formal O-xxx ledger generation only; it does not set the number of ordinary working proposals.
 
 | Condition | Action |
 | --- | --- |
@@ -328,6 +348,8 @@ Questions are limited to at most three items across all upstream ledgers and thi
 
 ### Stop boundary
 
+This is the formal concept-ledger segment's stop; it does not forbid the model's separate ordinary advice or the user's requested deepening.
+
 When the precedent and concept ledger is complete — precedent input processed or its absence recorded, exactly three concept directions generated with substantive differentiation across at least three axes, falsifiability conditions stated, evidence traces recorded, missing information flagged, and at most three high-impact questions raised — **stop**. Do not continue into:
 
 - criteria definition (K-xxx);
@@ -339,7 +361,7 @@ When the precedent and concept ledger is complete — precedent input processed 
 - real precedent database construction, batch precedent collection, or Rubric;
 - fixed regression or forward evaluation suites — these belong to Phase 4.
 
-This reference is not a Skill, not a workflow, and not a concept generator. It is the single authoritative precedent operation and concept-direction framework for Phase 3 segment 5.
+The formal segment is not a Skill, not a workflow, and not a concept generator on its own. It is the authoritative precedent operation and concept-direction ledger framework for Phase 3 segment 5; working studies and drafts have their own entry above.
 
 ---
 

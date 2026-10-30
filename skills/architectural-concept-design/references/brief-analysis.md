@@ -1,10 +1,24 @@
 # Brief Analysis: intake, evidence labeling, and missing-information identification
 
-This reference covers the first segment of Phase 3 (Architectural Chain): receiving a raw design brief or attachment summary, building a traceable brief ledger, classifying every claim with an evidence label, surfacing conflicts and missing information, and asking at most three high-impact questions before anything else.
+Use the working intake below for an ordinary request. The separate formal brief-ledger procedure retains Phase 3 segment 1's source registration, evidence mapping and stop boundary.
+
+## Working intake and beginner start
+
+Understand what the student wants now, not only the assignment's eventual deliverables. If they do not know where to start, explain the architectural problem, separate given conditions from consequential gaps and later details, and suggest a small useful action. Begin that action in the same response when the material permits it: a functional relationship sketch, a focused case-study question or a site-visit plan can be useful before precise dimensions exist.
+
+Reuse accessible material and already confirmed choices. A single-case request does not need a project budget, opening date, a thirteen-field normalized ledger or four completed ledgers. Ask at most three high-impact questions; continue independent work rather than turning ordinary missing information into a universal stop. Do not promise measured layouts without dimensions.
+
+State the sources of supplied facts, distinguish interpretation, assumptions and proposals, and preserve conflicts. A label or provisional project description never turns evidence into VERIFIED. Use readable source notes for prose; when creating structured Source/Evidence records, the field-level contracts below remain mandatory. Do not manufacture IDs, timestamps, human decisions or a completed formal ledger.
+
+## Formal brief-ledger procedure
+
+The required inputs, fixed ledger sections, mappings, intake-only prohibitions and stop below apply when explicitly producing this formal ledger. They do not prohibit ordinary design work routed by the main Skill to another task reference after working intake.
 
 ## Scope and prohibitions
 
 ### Required inputs
+
+For this formal intake ledger:
 
 - One or more raw brief texts, attachment summaries, or stakeholder statements.
 - Every input piece MUST be registered as a Source before any claim is classified.
@@ -212,6 +226,8 @@ The ledger maps to input.schema.json as follows. This table is precise and execu
 
 ## Stop boundary
 
+This is the boundary of the formal intake segment, not the completion condition for every architectural request.
+
 When the ledger is complete and any high-impact questions are formulated, **stop**. Do not continue into site analysis, program organization, adjacency, circulation, grid, core, height, environmental response, concept generation, option comparison, or stale propagation. Those are the responsibility of later references and segments of Phase 3.
 
-This reference itself is not a Skill, not a workflow, and not a concept generator. It is an intake procedure only.
+The formal brief-ledger procedure is not a Skill, not a workflow, and not a concept generator. It is intake only; the working intake above can route onward to the user's actual task.

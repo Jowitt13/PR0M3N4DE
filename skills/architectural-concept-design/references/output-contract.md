@@ -24,6 +24,25 @@
 
 ## Purpose, prerequisites, and authority
 
+### Task-specific delivery
+
+Ordinary architectural work has its own completion point. Deliver the result requested now, with source notes, uncertainty and useful next work; a full state package is not a prerequisite:
+
+- Case study: concrete spatial operations, source versus interpretation, comparison when requested, transfer conditions and costs. One case needs no extra cases, concept choice or deck.
+- Research preparation: design questions linked to places, observations, photographs, measurements or interviews. No field visit is claimed until it happened.
+- Research synthesis: provided records associated with objects/sources, observations distinguished from interpretation, conflicts preserved, and design implications plus follow-up checks.
+- Concept or adopted-direction deepening: functional/area/entry/circulation/massing relationships, actual trade-offs and conditions, with decisions still human. Unknown geometry is not a fitted plan.
+
+New-build, renovation and mixed projects must change the substance of these outputs: site/program organization; existing-object retention/intervention/fit; or new/old allocation and interfaces. A clear reply, editable report/table or appropriately qualified diagram is sufficient for a local task. Produce files only when useful; do not generate every section or an empty project scaffold by default.
+
+Working proposals can be AI-authored and marked PROPOSED. Partial human adoption, rejection and pending items refer to specific draft parts, not a fabricated human-authored attestation. Carry sources and unaffected decisions forward after changes, state actual update impacts, and distinguish unregistered draft revision from machine-validated state freshness.
+
+PPT, presentation usability, WPS round-trip and Human Pilot are optional/experimental and non-blocking. Their explicit presentation DELIVERY conditions do not block an ordinary report. Do not claim Microsoft PowerPoint/Qwen Office compatibility or Human Pilot acceptance from an archive, script or example.
+
+### Formal full-chain assembly applicability
+
+The complete ledgers, two aligned artifacts, twelve sections, field mappings and validation below govern an explicitly requested formal full-chain package. These requirements are not ordinary task minima. Follow its actual human-authored route prerequisites; if an AI draft cannot meet them honestly, report the limitation rather than forge a declaration or weaken validation. A working report is never silently renamed a validated formal package.
+
 Use this reference only after the following ledgers are complete for the same project state:
 
 1. brief and evidence intake;
@@ -38,6 +57,8 @@ Those upstream references remain the sole authority for their facts, evidence cl
 The package is an architectural pre-design deliverable. It is not construction documentation, a regulatory-compliance conclusion, a structural calculation, a cost estimate, a professional approval, or a final design decision.
 
 ## Two aligned artifacts
+
+For formal full-chain assembly:
 
 Produce both artifacts together:
 
@@ -186,6 +207,8 @@ Map the human-readable package to existing Schema fields only:
 The following are **human-readable narrative only** and must not be added as new JSON fields: explanatory prose, layout order, comparison commentary, unresolved-question wording, professional-review notices, and stale-propagation requests. In particular, do not add free-text `assumptions`, scores, rankings, recommendations, case-library search results, or implementation metadata that the Schema does not define.
 
 ## Assembly check and stop boundary
+
+The following assembly checks are for the formal full-chain package, not a supplied-case report or fieldwork plan.
 
 Before delivering, check that:
 

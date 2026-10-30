@@ -18,9 +18,17 @@
 
 ## Prerequisites and inputs
 
+### Working hypotheses versus formal H-xxx
+
+In ordinary concept work, discuss structural logic, core position or section alternatives when useful to the current question, citing the actual available material and consequences. Unknown existing structures, heights and capacity stay unknown; renovation strategies remain conditional on their confirmation. A conceptual recommendation is not a structural design or proof of safety. Do not make complete upstream ledgers a prerequisite for qualitative advice.
+
+The formal H-xxx procedure below is separate: its three upstream ledgers, evidence linkage, numeric integrity, record quantities and segment stop remain required whenever creating that formal ledger/state. This does not permit baseless precise dimensions in a working draft, nor permit a draft to be relabeled as a validated H-xxx record.
+
 ### Upstream ledgers
 
-This reference must only be used after all three upstream ledgers are complete:
+For formal H-xxx generation:
+
+The formal H-xxx procedure must only be used after all three upstream ledgers are complete:
 
 1. A completed **brief ledger** produced by [brief-analysis.md](brief-analysis.md).
 2. A completed **site ledger** produced by [site-context-analysis.md](site-context-analysis.md).
@@ -267,6 +275,8 @@ The comparison table is for descriptive cross-referencing only. Do not rank, sco
 Questions are limited to at most three items. Omit the entire section when no questions arise. Do not add a fourth item.
 
 ### Stop boundary
+
+This is the formal H-xxx segment's boundary, not a prohibition on separately requested working concepts.
 
 When the grid/core/height ledger is complete — H-xxx hypotheses recorded with traceable evidence, INFERRED and ASSUMED Evidence Records attached, dimension comparison table populated, missing information flagged, and at most three high-impact questions raised — **stop**. Do not continue into:
 

@@ -12,11 +12,29 @@
 - [Output format](#output-format)
 - [Stop boundary](#stop-boundary)
 
-This reference covers the second segment of Phase 3 (Architectural Chain): receiving a completed brief ledger, extracting and classifying every site-related statement, recording observations and interpretations with evidence labels, surfacing missing information, producing candidate site constraints, and stopping before any site strategy or massing decision.
+Use the research modes below directly from available material. The formal site-ledger procedure later in this reference retains Phase 3 segment 2's upstream and evidence contracts.
+
+## Research preparation and material synthesis
+
+First distinguish preparing a visit from interpreting records already collected. A useful preparation output connects each design question to a location/route, what to observe or photograph (object, position and direction), dimensions to record, interview questions and the decision those records will inform. Include access permission, on-site safety or specialist inspection needs where relevant. Put a usable recording table in the same plan if helpful; do not require another form system.
+
+For new construction, focus on supplied boundaries, arrival, neighboring uses, levels, environmental information and user needs. For renovation, also identify each existing building/part, current use and access, retention requirements and their authority, spatial/structural/service information available, visible condition clues and permissions still unknown. For mixed projects examine both sets and their shared entries, open spaces, services and old/new interfaces; record phasing only where ongoing use makes it relevant. The presence of old fabric alone does not determine the project type.
+
+When synthesizing records, associate each photo, note, measurement, interview or drawing with its object and source. Separate what the record states from your interpretation and proposed response. Group conflicts, design implications, opportunities and specific follow-up checks. Preserve competing dimensions rather than average them into a claimed measurement. Text descriptions of photographs support record synthesis only; without actual images, do not claim visual recognition or image inspection.
+
+No records are needed to prepare fieldwork, but a plan is not an executed visit. Photos without scales do not establish dimensions; cracks/rust are condition clues, not structural safety, demolition permission or fire-compliance evidence. Unknown north/boundaries/scale require relationship sketches, not a surveyed site plan. Carry uncertain retention conditions into the subsequent design discussion; never silently erase a mandatory retained object.
+
+Finish when the visit plan can be acted on, or the provided records have been organized into traceable observations, implications and gaps. No concept competition, formal state assembly or PPT is needed. If the user next requests a strategy, carry this material into the working concept route; do not present that new proposal as a site observation.
+
+## Formal site-ledger procedure
+
+The following completed-brief prerequisite, structured records and segment-specific prohibitions govern the formal site ledger. They do not block the preparation/synthesis modes above. Any Source/Evidence record written to state still obeys its full Schema, regardless of entry mode.
 
 ## Scope and prohibitions
 
 ### Required inputs
+
+For a formal site ledger:
 
 - A completed brief ledger produced by [brief-analysis.md](brief-analysis.md) with registered Sources, labelled Evidence Records, and at most three high-impact questions.
 - The original brief text and the registered source material referenced by the brief ledger.
@@ -210,6 +228,8 @@ Site evidence and hypotheses integrate into the same output.schema.json state pa
 
 ## Stop boundary
 
+The following stop is the formal site-ledger handoff; research preparation and synthesis have their own completion points above.
+
 When the site ledger is complete—observations classified, interpretations recorded as hypotheses, candidate constraints listed, and missing information flagged—**stop**. Do not continue into:
 
 - site strategy or mass placement;
@@ -222,4 +242,4 @@ When the site ledger is complete—observations classified, interpretations reco
 
 Those are the responsibility of later references and segments of Phase 3.
 
-This reference itself is not a Skill, not a workflow, and not a concept generator. It is a site and context analysis procedure only.
+The formal site-ledger procedure is not a Skill, not a workflow, and not a concept generator. Its segment boundary does not replace the research preparation/synthesis completion points above.

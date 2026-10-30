@@ -19,9 +19,25 @@
 
 ## Prerequisites and upstream-authority boundary
 
+### Working advice, partial adoption and continuity
+
+For ordinary design discussion, compare the actual drafts against the user's concerns in natural language. Explain strengths, costs, dependencies and overturn conditions; offer a reasoned qualitative recommendation if useful. Do not invent weighted scores, treat a preference as fact, or make the user's final decision. The formal matrix below retains its own no-auto-recommendation rule; it is not a blanket ban on ordinary advice.
+
+Bind each human instruction to the actual draft/version and parts named. For an A-entrance/B-reading combination with no canopy, preserve adoption, rejection and undecided content separately. Reconcile circulation, adjacency and area conflicts before developing the combined draft. Do not silently mark whole options adopted, invent new choices or require a signature per file. The existing report can hold this record; do not create another decision database.
+
+On a new area or retention condition, identify and update the work actually affected, preserve unrelated sources and decisions, and say what remains to revise. Only registered state can claim machine stale propagation through the existing validated dependencies; unregistered prose needs an honest update list, not invented freshness receipts.
+
+If formal persistence is requested, use a D-xxx only where the real upstream objects exist and the human instruction fits its original fields. A partial combination may first be recorded as a `revise` instruction on an existing option and developed into a new draft, rather than falsely selecting all of A/B. Do not manufacture an O-xxx, human identity or hash. Human adoption does not satisfy the separate human-authored draft declaration. If that formal route cannot represent the actual provenance, explain the limitation and continue ordinary work without claiming a validated state package.
+
+### Formal comparison applicability
+
+All remaining prerequisite, K/O/D/DEP mapping, no-auto-ranking and segment-stop rules below govern the named formal comparison/handoff. They preserve the upstream authorities and do not turn the working advice above into formal assessments or Decisions.
+
 ### Upstream ledger dependencies
 
-This reference must only be used after all upstream ledgers and concept-direction generation are complete:
+For formal comparison and handoff:
+
+The formal comparison/handoff procedure must only be used after all upstream ledgers and concept-direction generation are complete:
 
 1. A completed **brief ledger** produced by [brief-analysis.md](brief-analysis.md).
 2. A completed **site ledger** produced by [site-context-analysis.md](site-context-analysis.md).
@@ -480,6 +496,8 @@ Expected stale reason: <human-readable text>
 ---
 
 ## Stop boundary
+
+This is the formal comparison/handoff segment's stop; it does not restart an already adopted ordinary draft or prohibit requested working recommendations.
 
 When the comparison matrix, human decision request, dependency model, and stale-propagation handoff are complete — criteria defined and assessed, matrix presented, decision requested, dependencies established, and stale requests documented — **stop**. This is Phase 3 segment 6; it does not complete Phase 3 or Phase 4. Do not continue into:
 

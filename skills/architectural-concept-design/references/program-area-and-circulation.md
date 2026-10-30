@@ -12,11 +12,27 @@
 - [Output format](#output-format)
 - [Stop boundary](#stop-boundary)
 
-This reference covers the third segment of Phase 3 (Architectural Chain): after the brief ledger and site ledger are complete, receive the structured program and relations from input.schema.json, build a traceable program-and-area ledger, validate adjacency, form zoning and circulation hypotheses, and stop before any grid, core, or concept work.
+This reference supports working program advice and the separate formal program-and-area ledger (Phase 3 segment 3).
+
+## Working programs and circulation
+
+Start from the available brief and current question. Propose functional grouping, activity/quiet gradients, entry relationships and visitor/staff/service movement in readable prose or a relationship diagram. Explain why spaces connect and what separation costs. Existing material need not be reformatted into complete brief/site ledgers before discussing a working arrangement. Such proposals are not confirmed structured relations.
+
+Run the existing area checker for supplied schedules. Distinguish net area, grossing assumptions, gross area and any stated counting rule; do not invent missing room areas. Check site-area/FAR arithmetic explicitly when those inputs are supplied. If the stated limit conflicts with the requested total, show the discrepancy and conditional alternatives; do not change the site, discard counted functions or invent an exemption to hide it. Arithmetic does not establish a legal planning conclusion.
+
+New-build advice can organize the program around access, volume and site opportunities. Renovation must check each function against the available existing spaces and retention conditions, with adjustments/additions clearly proposed. Mixed projects need an allocation between old/new objects and the interfaces/shared facilities, rather than two unrelated lists. With no dimensions, show relational fit and verification needs instead of claiming a fitted plan.
+
+After a requested area change, recalculate the affected schedule and revisit adjacency/circulation consequences; preserve unaffected research and choices. Do not claim all drawings were updated when only a calculation or explanation changed.
+
+## Formal program-and-area ledger procedure
+
+The prerequisites, permitted JSON fields, evidence records and stop boundary below apply to this named formal ledger. They do not prevent the ordinary spatial proposals above. No candidate is written as a confirmed input relation, no additional state fields are introduced, and no validator is relaxed.
 
 ## Scope and prohibitions
 
 ### Required inputs
+
+For the formal ledger:
 
 - A completed brief ledger produced by [brief-analysis.md](brief-analysis.md).
 - A completed site ledger produced by [site-context-analysis.md](site-context-analysis.md).
@@ -303,6 +319,8 @@ All IDs (S-xxx, R-xxx, H-xxx, E-xxx) must be unique across the combined state. D
 
 ## Stop boundary
 
+This stop applies to the formal program-and-area segment. Continue ordinary concept work through its own reference when that is the user's request.
+
 When the program-and-area ledger is complete — spaces validated, area calculated by script, relations checked for validity, gaps and conflicts flagged, candidate adjacencies recorded for human confirmation, and zoning/circulation hypotheses traced to evidence — **stop**. Do not continue into:
 
 - floor-plan resolution or spatial layout;
@@ -313,4 +331,4 @@ When the program-and-area ledger is complete — spaces validated, area calculat
 
 Those are the responsibility of later references and segments of Phase 3.
 
-This reference is not a Skill, not a workflow, and not a concept generator. It is a program, area, adjacency, zoning, and circulation procedure only.
+The formal program-and-area procedure is not a Skill, not a workflow, and not a concept generator. Working programs above support the separately requested architectural task without claiming formal validation.
