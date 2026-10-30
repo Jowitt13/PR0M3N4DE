@@ -1,7 +1,7 @@
 # User-Authorized Noncommercial Presentation Media
 
 > **Single authority** for the future, per-run presentation-media mode accepted
-> by [ADR-0007](../../../docs/adr/0007-user-authorized-noncommercial-presentation-media.md).
+> by ADR-0007 (source-repository maintainer record `docs/adr/0007-user-authorized-noncommercial-presentation-media.md`, not shipped with the installed Skill). This package-local reference contains the applicable runtime boundary; normal use does not require access to the private source repository.
 > ADR-0007 is merged, but the mode is not currently operational. Until its
 > separately reviewed runtime and presentation-handoff implementations exist, do not access, download,
 > extract, render, or embed third-party media.
