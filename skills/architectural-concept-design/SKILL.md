@@ -25,6 +25,8 @@ Read only the references needed now. These are independent entry points, not seq
 | Organize functions, areas and circulation | [program-area-and-circulation.md](references/program-area-and-circulation.md) | Checked quantities, adjacencies and movement |
 | Generate or deepen a concept | [concept-options-and-decisions.md](references/concept-options-and-decisions.md); [grid/core/height](references/grid-core-height-hypotheses.md) when needed | Drawable relationships and trade-offs |
 | Compare, revise or adopt parts | [option-comparison-decision-handoff.md](references/option-comparison-decision-handoff.md) | Comparison and a coherent revision preserving actual choices |
+| Produce or continue a dimensioned single-storey layout | [working-design-context.md](references/working-design-context.md); [concept-layout-checks.md](references/concept-layout-checks.md) | Actual D1 geometry, SVG and areas; same-version revision and recovery |
+| Apply an explicitly confirmed ongoing habit | [project-preferences.md](references/project-preferences.md) | Project/user-scoped preferences that can be corrected, disabled or forgotten |
 
 [output-contract.md](references/output-contract.md) distinguishes task delivery from formal-package assembly. Ordinary work can finish as a reply, editable report, record table or diagram. Generate files when useful or requested, not empty boilerplate or a state package merely to finish a case study.
 
@@ -40,6 +42,8 @@ Use [area-schedule.schema.json](references/area-schedule.schema.json) and `scrip
 
 ## Continue after a human revision
 
+For ongoing file-based design, read the project's existing design record and relevant active preferences for the named user, then verify the current artifact identities. [working-design-context.md](references/working-design-context.md) maintains a small `DESIGN-CONTEXT.md` when continuity matters; case questions and short discussions need no empty scaffold. One geometry source drives the drawing, areas and revision account. Missing, externally changed or mismatched artifacts call for a concrete choice, not an overwrite or an unsupported synchronization claim.
+
 Reuse the current materials and latest draft. For “entrance from A, reading spaces from B, no canopy, everything else pending”, adopt only those named parts, reject the canopy and keep the rest pending. Recheck the combination's access, adjacencies and area conflicts before deepening; a simple splice is not proof it works. Do not mark all of A/B selected or restart an option competition by default.
 
 Bind the actual instruction to the specific draft/version in existing reports or project records, without a second fact store. When an area or retention condition changes, identify affected calculations, arrangements, diagrams and text, retain unaffected research, and update the requested work. Registered state uses the existing [maturity/staleness](references/design-data-maturity-and-staleness.md) tools. Unregistered prose must list needed revisions; do not claim machine freshness, automatic propagation or edits not performed.
@@ -47,6 +51,8 @@ Bind the actual instruction to the specific draft/version in existing reports or
 Human adoption of an AI-authored draft is not human authorship. Ordinary work does not need a signature for every file. Formal persistence follows the applicable Decision path below, without invented upstream objects or false human-authored declarations.
 
 ## Formal state and guided teaching are explicit paths
+
+For “remember / from now on”, follow [project-preferences.md](references/project-preferences.md): record only the explicitly requested ongoing habit in the authorized project. Current instructions win. A one-off dimension or lock belongs in the design context. Do not infer a profile, scan other projects, change the installed Skill, or recover forgotten preferences from hidden copies.
 
 Formal-ledger prerequisites, stage boundaries, quantities and mappings govern their named records, not every working sketch. Do not loosen a validator or turn a formal assessment into an automatic decision.
 
