@@ -26,6 +26,12 @@
 
 ### Task-specific delivery
 
+For a supported single-storey D1 working layout, [working-design-context.md](working-design-context.md)
+and [concept-layout-checks.md](concept-layout-checks.md) connect actual SVG geometry,
+target/actual areas, scoped checks and version-bound changes. Project design and
+personal preference records remain project-local; distribute only their empty
+templates, never actual records. These drafts are not formal teaching states.
+
 Ordinary architectural work has its own completion point. Deliver the result requested now, with source notes, uncertainty and useful next work; a full state package is not a prerequisite:
 
 - Case study: concrete spatial operations, source versus interpretation, comparison when requested, transfer conditions and costs. One case needs no extra cases, concept choice or deck.

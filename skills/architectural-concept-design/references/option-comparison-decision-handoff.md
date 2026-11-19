@@ -1,5 +1,10 @@
 # Option comparison, human decision, dependency, and stale-propagation handoff
 
+For ordinary file-based partial adoption, attribute locks, same-version revision
+and recovery, use [working-design-context.md](working-design-context.md). Its
+AI-authored working record does not replace the formal Decision and dependency
+requirements below.
+
 > **Single authoritative source** for comparison criteria (K-xxx), option assessment, comparison-matrix presentation, human-design-decision request (D-xxx), dependency-edge modelling (DEP-xxx), and stale-propagation handoff within Phase 3. This reference does not implement `propagate-stale` or `validate_state.py` — it models the human-readable handoff for a subsequent Phase 4 automation task. This is Phase 3 segment 6; it does not complete Phase 3 or Phase 4.
 
 ## Contents
